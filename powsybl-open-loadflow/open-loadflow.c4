@@ -1,0 +1,55 @@
+specification {
+  element repository
+  element module
+  element api
+  element provider
+  element engine
+  element adapter
+  element model
+  element component
+  element binding
+  element library
+}
+
+model {
+  powsybl_open_loadflow = repository 'powsybl-open-loadflow' 'Provider implementations and numerical engines for Powsybl steady-state analyses.' {
+    open_loadflow_provider = provider 'OpenLoadFlowProvider' 'Implements LoadFlowProvider for AC and DC load flows.'
+    open_sensitivity_provider = provider 'OpenSensitivityAnalysisProvider' 'Implements SensitivityAnalysisProvider.'
+    open_security_provider = provider 'OpenSecurityAnalysisProvider' 'Implements SecurityAnalysisProvider.'
+
+    ac_dc_loadflow_engines = engine 'AC/DC load-flow engines' 'AcloadFlowEngine, DcLoadFlowEngine, solvers, and outer loops.'
+    sensitivity_engines = engine 'AC/DC sensitivity engines' 'AcSensitivityAnalysis and DcSensitivityAnalysis.'
+    security_analysis_engines = engine 'Security analysis engines' 'AcSecurityAnalysis, DcSecurityAnalysis, and WoodburyDcSecurityAnalysis.'
+
+    lf_network_adapter = adapter 'IIDM to LfNetwork adapter' 'Networks, LfNetworkLoaderImpl, and equipment-specific Lf* adapters.'
+    lf_network = model 'LfNetwork' 'Solver-facing electrical network, topology, equations, and state.'
+    contingency_propagation = adapter 'Contingency propagation' 'PropagatedContingency, ContingencyTripping, and node/breaker traversal.'
+    state_and_result_mapping = adapter 'IIDM state and core-result mapping' 'Updates IIDM state and adapts solver outputs to Core result contracts.'
+    network_cache = component 'NetworkCache' 'NetworkListener-backed cache for incremental AC load-flow runs.'
+
+    open_loadflow_provider -> ac_dc_loadflow_engines 'runs AC or DC calculation'
+    open_loadflow_provider -> lf_network_adapter 'loads the computation network'
+    ac_dc_loadflow_engines -> lf_network 'solves equations on'
+    ac_dc_loadflow_engines -> state_and_result_mapping 'returns results for write-back'
+    lf_network_adapter -> lf_network 'builds and configures'
+    network_cache -> lf_network 'reuses and invalidates'
+
+    open_sensitivity_provider -> sensitivity_engines 'runs sensitivity calculation'
+    open_sensitivity_provider -> open_loadflow_provider 'uses the configured base-case load-flow provider'
+    sensitivity_engines -> lf_network_adapter 'loads base-case topology'
+    sensitivity_engines -> lf_network 'computes derivatives on'
+
+    open_security_provider -> security_analysis_engines 'runs pre/post-contingency simulations'
+    security_analysis_engines -> contingency_propagation 'converts and applies outages'
+    security_analysis_engines -> lf_network_adapter 'creates topology-specific networks'
+    security_analysis_engines -> state_and_result_mapping 'maps security results'
+    contingency_propagation -> lf_network 'produces LfContingency operations for'
+  }
+}
+
+views {
+  view index of powsybl_open_loadflow {
+    title 'powsybl-open-loadflow Components'
+    include *
+  }
+}

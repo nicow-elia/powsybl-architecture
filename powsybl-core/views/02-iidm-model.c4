@@ -1,0 +1,49 @@
+views {
+  view iidm_model of powsybl_core.iidm {
+    title 'IIDM: Network model and exchange formats'
+    description 'IIDM centres every calculation on Network. The model groups the principal topology, injection, branch, transformer, HVDC, DC-grid, and control interfaces. Network.read and Network.write discover format providers through the Importer and Exporter SPIs.'
+
+    include network
+    include common_types
+    include common_types.*
+    include variants
+    include variants.*
+    include topology
+    include topology.*
+    include injections
+    include injections.*
+    include branches
+    include branches.*
+    include transformers
+    include transformers.*
+    include hvdc
+    include hvdc.*
+    include dc_grid
+    include dc_grid.*
+    include limits_and_control
+    include limits_and_control.*
+    include extensions
+    include extensions.*
+    include io
+    include io.network_read_write
+    include io.importer_spi
+    include io.exporter_spi
+    include io.provider_discovery
+    include io.exchange_formats
+    include io.exchange_formats.*
+    include io.import_providers
+    include io.import_providers.*
+    include io.export_providers
+    include io.export_providers.*
+
+    style io.exchange_formats.* {
+      color muted
+    }
+    style io.import_providers.* {
+      color sky
+    }
+    style io.export_providers.* {
+      color green
+    }
+  }
+}

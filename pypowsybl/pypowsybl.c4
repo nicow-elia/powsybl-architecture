@@ -1,0 +1,45 @@
+specification {
+  element repository
+  element module
+  element api
+  element provider
+  element engine
+  element adapter
+  element model
+  element component
+  element binding
+  element library
+}
+
+model {
+  pypowsybl = repository 'pypowsybl' 'Python bindings that expose Powsybl Core APIs and IIDM data as Python objects and pandas DataFrames.' {
+    python_api = api 'Python domain APIs' 'network, loadflow, security, sensitivity, and other Python facades.'
+    python_network = component 'Python Network wrapper' 'Network._handle retains the opaque Java object handle across native calls.'
+    dataframe_views = adapter 'pandas DataFrame adapters' 'Convert pandas DataFrames to native dataframes and SeriesArray results back to pandas.'
+    pybind_extension = binding '_pypowsybl pybind11 extension' 'The C++ extension module used by the Python API.'
+    native_image_bridge = binding 'GraalVM native-image bridge' 'PowsyblCaller and GraalVmGuard cross the native-image isolate boundary.'
+    java_bindings = module 'Java C entry points' 'GraalVM @CEntryPoint functions that hold Java object handles and call public Powsybl APIs.' {
+      network_c_functions = binding 'NetworkCFunctions'
+      analysis_c_functions = binding 'LoadFlowCFunctions, SecurityAnalysisCFunctions, SensitivityAnalysisCFunctions'
+    }
+    dataframe_mappers = adapter 'Java DataFrame mappers' 'NetworkDataframes, DataframeMapper, adders, and modification mappers over IIDM.'
+
+    python_api -> python_network 'creates and passes Network handles'
+    python_api -> dataframe_views 'accepts and returns pandas DataFrames'
+    python_api -> pybind_extension 'calls the extension module'
+    python_network -> pybind_extension 'passes its opaque handle to'
+    dataframe_views -> pybind_extension 'marshals Dataframe and SeriesArray data through'
+    pybind_extension -> native_image_bridge 'calls native-image entry points through'
+    native_image_bridge -> java_bindings 'forwards calls across the isolate to'
+    java_bindings -> dataframe_mappers 'maps IIDM elements and result series through'
+  }
+}
+
+views {
+  view index of pypowsybl {
+    title 'pypowsybl: Binding and DataFrame layers'
+    description 'pypowsybl adapts public Powsybl APIs for Python. The Python package delegates through pybind11 and the GraalVM native image to Java C entry points; DataFrame adapters project IIDM data into pandas and marshal edits back to the Java model.'
+    include *
+    include pypowsybl.java_bindings.*
+  }
+}
