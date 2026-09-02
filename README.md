@@ -11,7 +11,7 @@ This directory contains one LikeC4 project for the repositories checked out besi
 - Proposal relationships may point to factual FQNs using intent labels such as `would consume as-is`, `would extract into`, or `would expose support for`. This shows reuse without claiming that the target capability already exists.
 - `model/00-specification.c4` is shared LikeC4 vocabulary rather than factual or target architecture.
 
-The source evidence for the State Estimation baseline, including reviewed branches and commits, is recorded in [architecture-evidence.md](architecture-evidence.md).
+The source evidence for factual State Estimation building blocks and the absence of an estimator, including reviewed branches and commits, is recorded in [architecture-evidence.md](architecture-evidence.md).
 
 ## Factual Documentation Links
 

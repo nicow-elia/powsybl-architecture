@@ -1,4 +1,4 @@
-views {
+views 'powsybl-core' {
   view loadflow_interaction {
     title 'Load Flow: powsybl-core to Open Load Flow'
     description 'The Core LoadFlow.Runner discovers the Open Load Flow provider. The shared IIDM Network is adapted to LfNetwork, solved by an AC or DC engine, then updated and returned through Core contracts.'

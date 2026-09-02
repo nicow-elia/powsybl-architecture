@@ -1,7 +1,0 @@
-model {
-  powsybl_core.loadflow_api -> powsybl_open_loadflow.open_loadflow_provider 'discovers and runs'
-  powsybl_core.sensitivity_api -> powsybl_open_loadflow.open_sensitivity_provider 'discovers and runs'
-  powsybl_core.security_analysis_api -> powsybl_open_loadflow.open_security_provider 'discovers and runs'
-  powsybl_core.iidm.network -> powsybl_open_loadflow.lf_network_adapter 'is adapted by'
-  powsybl_core.contingency_api -> powsybl_open_loadflow.contingency_propagation 'is propagated by'
-}

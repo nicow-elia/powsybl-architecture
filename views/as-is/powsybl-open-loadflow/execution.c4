@@ -1,4 +1,4 @@
-views {
+views 'powsybl-open-loadflow' {
   view fast_restart_and_network_cache {
     title 'Open Load Flow: Fast Restart and NetworkCache'
     description 'NetworkCache observes IIDM changes and parameter compatibility to reuse solver networks. The generic entry design backs both AC and DC load-flow fast restart; topology changes trigger the stricter reset path, while compatible changes can reuse a loaded computation network.'

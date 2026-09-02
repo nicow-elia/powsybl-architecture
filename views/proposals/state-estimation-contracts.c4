@@ -1,4 +1,4 @@
-views {
+views 'State Estimation: proposals' {
   view state_estimation_proposed_contracts {
     title 'Proposed State Estimation and OpenSteadyState contracts'
     description 'Proposed change inventory. Indigo, green, and sky elements describe current source-backed components; amber elements are not present in the current codebase and define the required State Estimation and OpenSteadyState changes.'

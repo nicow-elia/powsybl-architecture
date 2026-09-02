@@ -1,4 +1,4 @@
-views {
+views 'State Estimation: proposals' {
   view state_estimation_proposal_a {
     title 'Proposal A: Separate OpenSteadyState and State Estimation repositories'
     description 'Proposed target structure; no State Estimation API, provider, or WLS implementation exists in the current Core or Open Load Flow codebase. This overview keeps repository provenance and the State Estimation flow visible; detailed WLS and contract dependencies remain available through element context and the contracts view.'

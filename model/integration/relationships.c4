@@ -1,8 +1,0 @@
-model {
-  pypowsybl.native_image_bridge -> powsybl_core.commons 'initializes Java services from'
-  pypowsybl.java_bindings.network_c_functions -> powsybl_core.iidm.network 'binds Network handles'
-  pypowsybl.java_bindings.analysis_c_functions -> powsybl_core.loadflow_api 'binds load-flow APIs'
-  pypowsybl.java_bindings.analysis_c_functions -> powsybl_core.sensitivity_api 'binds sensitivity APIs'
-  pypowsybl.java_bindings.analysis_c_functions -> powsybl_core.security_analysis_api 'binds security-analysis APIs'
-  pypowsybl.dataframe_mappers -> powsybl_core.iidm.network 'maps IIDM elements through'
-}

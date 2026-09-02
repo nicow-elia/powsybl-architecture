@@ -1,4 +1,4 @@
-views {
+views 'Integration' {
   view contingency_and_corrective_action_flow {
     title 'Contingency and Corrective-Action State Flow'
     description 'Core supplies contingencies, actions, operator strategies, and state monitors. Open Load Flow creates N, N-1, and post-action states, evaluates limits, then maps the selected results back to Core. The contract supports post-strategy sensitivity contexts; provider and load-flow-model support can differ by analysis mode.'

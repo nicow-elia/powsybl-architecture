@@ -1,4 +1,4 @@
-views {
+views 'powsybl-core' {
   view core_repository_structure of powsybl_core {
     title 'powsybl-core: Repository structure'
     description 'powsybl-core provides the IIDM network model, public computation APIs, shared contingency contracts, and common runtime services. Select IIDM to inspect its equipment model and supported exchange formats.'

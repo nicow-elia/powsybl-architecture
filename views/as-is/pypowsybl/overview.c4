@@ -1,4 +1,4 @@
-views {
+views 'pypowsybl' {
   view pypowsybl_binding_layers of pypowsybl {
     title 'pypowsybl: Binding and DataFrame layers'
     description 'pypowsybl adapts public Powsybl APIs for Python. The Python package delegates through pybind11 and the GraalVM native image to Java C entry points; DataFrame adapters project IIDM data into pandas and marshal edits back to the Java model.'

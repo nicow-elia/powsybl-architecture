@@ -1,4 +1,4 @@
-views {
+views 'powsybl-core' {
   view iidm_model of powsybl_core.iidm {
     title 'IIDM: Network model and exchange formats'
     description 'IIDM centres every calculation on Network. The model groups the principal topology, injection, branch, transformer, HVDC, DC-grid, and control interfaces. Network.read and Network.write discover format providers through the Importer and Exporter SPIs.'
