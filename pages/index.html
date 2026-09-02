@@ -45,6 +45,16 @@
         width: min(100%, 400px);
       }
 
+      h2 {
+        font-size: 1rem;
+        letter-spacing: 0;
+        margin: 20px 0 0;
+      }
+
+      h2:first-child {
+        margin-top: 0;
+      }
+
       a {
         background: #2563eb;
         border-radius: 6px;
@@ -76,21 +86,24 @@
   <body>
     <main>
       <h1>Powsybl Architecture</h1>
-      <p>Explore the cross-project architecture, repository structure, IIDM model, and analysis views.</p>
+      <p>Factual views document the checked-out codebase. Proposal views describe a target architecture that is not yet implemented.</p>
       <nav aria-label="Architecture diagrams">
-        <a href="./app/#/project/powsybl-architecture/view/index/">Powsybl integration</a>
-        <a href="./app/#/project/powsybl-architecture/view/detailed_ac_dc_grid_lifecycle/">Detailed AC/DC grid lifecycle</a>
-        <a href="./app/#/project/powsybl-architecture/view/contingency_and_corrective_action_flow/">Contingency and corrective-action flow</a>
-        <a href="./app/#/project/powsybl-architecture/view/analysis_configuration_and_result_selection/">Analysis configuration and result selection</a>
-        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_a/">State estimation Proposal A</a>
-        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_b/">State estimation Proposal B</a>
-        <a href="./app/#/project/powsybl-architecture/view/shared_steady_state_interfaces/">OpenSteadyState interface inventory</a>
-        <a href="./app/#/project/powsybl-architecture/view/core_repository_structure/">powsybl-core</a>
-        <a href="./app/#/project/powsybl-architecture/view/open_loadflow_components/">powsybl-open-loadflow</a>
-        <a href="./app/#/project/powsybl-architecture/view/fast_restart_and_network_cache/">Open Load Flow fast restart and NetworkCache</a>
-        <a href="./app/#/project/powsybl-architecture/view/solver_and_outer_loop_pipeline/">Open Load Flow solver and outer-loop pipeline</a>
-        <a href="./app/#/project/powsybl-architecture/view/pypowsybl_binding_layers/">pypowsybl</a>
-        <a href="./app/#/project/powsybl-architecture/view/capability_and_provider_bundle/">pypowsybl capability and provider bundle</a>
+        <h2>As-is codebase</h2>
+        <a href="./app/#/project/powsybl-architecture/view/index/">As-is: Powsybl integration</a>
+        <a href="./app/#/project/powsybl-architecture/view/detailed_ac_dc_grid_lifecycle/">As-is: Detailed AC/DC grid lifecycle</a>
+        <a href="./app/#/project/powsybl-architecture/view/contingency_and_corrective_action_flow/">As-is: Contingency and corrective-action flow</a>
+        <a href="./app/#/project/powsybl-architecture/view/analysis_configuration_and_result_selection/">As-is: Analysis configuration and result selection</a>
+        <a href="./app/#/project/powsybl-architecture/view/state_estimation_as_is/">As-is: State Estimation baseline</a>
+        <a href="./app/#/project/powsybl-architecture/view/core_repository_structure/">As-is: powsybl-core</a>
+        <a href="./app/#/project/powsybl-architecture/view/open_loadflow_components/">As-is: powsybl-open-loadflow</a>
+        <a href="./app/#/project/powsybl-architecture/view/fast_restart_and_network_cache/">As-is: Open Load Flow fast restart and NetworkCache</a>
+        <a href="./app/#/project/powsybl-architecture/view/solver_and_outer_loop_pipeline/">As-is: Open Load Flow solver and outer-loop pipeline</a>
+        <a href="./app/#/project/powsybl-architecture/view/pypowsybl_binding_layers/">As-is: pypowsybl</a>
+        <a href="./app/#/project/powsybl-architecture/view/capability_and_provider_bundle/">As-is: pypowsybl capability and provider bundle</a>
+        <h2>Proposed target architecture</h2>
+        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_a/">Proposed: State Estimation Proposal A</a>
+        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_b/">Proposed: State Estimation Proposal B</a>
+        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposed_contracts/">Proposed: State Estimation and OpenSteadyState contracts</a>
       </nav>
     </main>
   </body>

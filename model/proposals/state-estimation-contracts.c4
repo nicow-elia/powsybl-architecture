@@ -1,0 +1,45 @@
+// All elements in this file are proposed changes. They intentionally reference
+// the canonical as-is Core, Open Load Flow, and pypowsybl FQNs rather than
+// redefining existing code as a future-state proxy.
+model {
+  proposed_state_estimation_core_api = api 'Proposed powsybl-core State Estimation API' {
+    summary 'StateEstimation, StateEstimationProvider, StateEstimationParameters, StateEstimationRunParameters, StateEstimationResult, and StateEstimationReport.'
+    description 'Proposed public API and ServiceLoader SPI. No State Estimation API or provider exists in the current powsybl-core codebase.'
+  }
+  proposed_state_estimation_input_contract = model 'Proposed State Estimation input and result contract' {
+    summary 'Input binding for existing Network, Measurements, and Observability extensions; projected bus/branch measurement data; proposed result and report types.'
+    description 'The current codebase has IIDM measurement and observability metadata, but no estimator input conversion, result contract, or report type.'
+  }
+  proposed_bus_branch_measurement_projection = component 'Proposed bus/branch measurement projection' {
+    summary 'Reduces node/breaker topology to a bus/branch model and maps measurement locations to the bus-voltage state-vector index.'
+    description 'A target network-toolkit capability. It applies switch and breaker status before State Estimation prepares z and W, analyzes observability, or evaluates measurement equations.'
+  }
+  proposed_rectangular_measurement_jacobian = component 'Proposed measurement-function and rectangular Jacobian support' {
+    summary 'Equation-toolkit support for building h(x) and a rectangular measurement Jacobian H.'
+    description 'Adds an equation-toolkit boundary for building h(x) and a rectangular H from projected bus/branch measurements. The WLS kernel, rather than the equation toolkit, would assemble G = H^T W H and H^T W r.'
+  }
+  proposed_retained_factorization = component 'Proposed retained factorization access' {
+    summary 'Caller-controlled factorization reuse for batched WLS solves and diagnostics.'
+    description 'Builds on the existing powsybl-math matrix abstractions without asserting that the required lifecycle currently exists.'
+  }
+  proposed_reusable_ac_measurement_terms = component 'Proposed reusable AC measurement terms' {
+    summary 'Published h(x) evaluators and derivatives for AC P/Q/I flows.'
+    description 'Makes selected existing Open Load Flow equation terms available to the proposed State Estimation module through a stable shared toolkit boundary.'
+  }
+
+  powsybl_core.iidm.network -> proposed_state_estimation_input_contract 'would provide Network to'
+  powsybl_core.iidm.extensions.measurements -> proposed_state_estimation_input_contract 'would contribute measurements to'
+  powsybl_core.iidm.extensions.observability -> proposed_state_estimation_input_contract 'would contribute observability metadata to'
+  powsybl_core.iidm.extensions.transformer_estimation_flags -> proposed_state_estimation_input_contract 'would contribute equipment flags to'
+  pypowsybl.measurement_and_observability_dataframes -> proposed_state_estimation_input_contract 'would marshal Python data through'
+  proposed_state_estimation_core_api -> proposed_state_estimation_input_contract 'would define calls over'
+  powsybl_open_loadflow.lf_network_adapter.network_loader -> proposed_bus_branch_measurement_projection 'would be extended for'
+  proposed_bus_branch_measurement_projection -> proposed_state_estimation_input_contract 'would derive reduced estimator input for'
+
+  powsybl_open_loadflow.equation_toolkit.equation_system -> proposed_rectangular_measurement_jacobian 'would be extended for'
+  powsybl_open_loadflow.equation_toolkit.ac_equation_builder -> proposed_reusable_ac_measurement_terms 'would expose existing terms through'
+  powsybl_core.math -> proposed_retained_factorization 'would expose controlled reuse through'
+  proposed_bus_branch_measurement_projection -> proposed_rectangular_measurement_jacobian 'would supply topology and state indexing to'
+  proposed_reusable_ac_measurement_terms -> proposed_rectangular_measurement_jacobian 'would evaluate h(x) and derivatives for'
+  proposed_rectangular_measurement_jacobian -> proposed_retained_factorization 'would form weighted normal equations with'
+}

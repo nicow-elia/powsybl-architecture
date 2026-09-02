@@ -1,0 +1,43 @@
+views {
+  view state_estimation_as_is {
+    title 'State Estimation: as-is building blocks and absence of an estimator'
+    description 'As-is codebase: IIDM provides measurement and observability metadata, pypowsybl exposes selected metadata through DataFrames, and Open Load Flow provides network, equation, and nonlinear-solver building blocks. Neither powsybl-core nor powsybl-open-loadflow currently provides a State Estimation API, provider, module, WLS kernel, result type, or report.'
+
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.extensions.measurements
+    include powsybl_core.iidm.extensions.observability
+    include powsybl_core.iidm.extensions.transformer_estimation_flags
+    include powsybl_core.math
+    include pypowsybl.measurement_and_observability_dataframes
+    include powsybl_open_loadflow.lf_network_adapter
+    include powsybl_open_loadflow.lf_network_adapter.network_loader
+    include powsybl_open_loadflow.lf_network
+    include powsybl_open_loadflow.equation_toolkit
+    include powsybl_open_loadflow.equation_toolkit.equation_system
+    include powsybl_open_loadflow.equation_toolkit.ac_equation_builder
+    include powsybl_open_loadflow.ac_dc_loadflow_engines
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.newton_raphson
+    autoLayout LeftRight
+
+    style powsybl_core.iidm.network,
+      powsybl_core.iidm.extensions.measurements,
+      powsybl_core.iidm.extensions.observability,
+      powsybl_core.iidm.extensions.transformer_estimation_flags,
+      powsybl_core.math {
+      color indigo
+    }
+    style pypowsybl.measurement_and_observability_dataframes {
+      color sky
+    }
+    style powsybl_open_loadflow.lf_network_adapter,
+      powsybl_open_loadflow.lf_network_adapter.network_loader,
+      powsybl_open_loadflow.lf_network,
+      powsybl_open_loadflow.equation_toolkit,
+      powsybl_open_loadflow.equation_toolkit.equation_system,
+      powsybl_open_loadflow.equation_toolkit.ac_equation_builder,
+      powsybl_open_loadflow.ac_dc_loadflow_engines,
+      powsybl_open_loadflow.ac_dc_loadflow_engines.newton_raphson {
+      color green
+    }
+  }
+}

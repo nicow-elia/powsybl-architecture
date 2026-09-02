@@ -1,47 +1,104 @@
 views {
   view state_estimation_proposal_a {
     title 'Proposal A: Separate OpenSteadyState and State Estimation repositories'
-    description 'Common to both proposals: powsybl-core owns the State Estimation API, IIDM boundary, and provider discovery. Proposal A extracts powsybl-open-steady-state as a reusable artifact; powsybl-open-loadflow and a standalone powsybl-state-estimation provider depend on it.'
+    description 'Proposed target structure; no State Estimation API, provider, or WLS implementation exists in the current Core or Open Load Flow codebase. This overview keeps repository provenance and the State Estimation flow visible; detailed WLS and contract dependencies remain available through element context and the contracts view.'
 
-    include shared_state_estimation_core_api
-    include shared_iidm_measurement_boundary
-    include shared_math_contract
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.extensions.measurements
+    include powsybl_core.iidm.extensions.observability
+    include powsybl_open_loadflow.lf_network
+    include powsybl_open_loadflow.lf_network_adapter.network_loader
+    include powsybl_open_loadflow.equation_toolkit
+    include powsybl_open_loadflow.ac_dc_loadflow_engines
+    include powsybl_open_loadflow.open_loadflow_provider
+    include proposed_state_estimation_core_api
+    include proposed_state_estimation_input_contract
     include proposal_a_open_steady_state
-    include proposal_a_open_loadflow
+    include proposal_a_open_steady_state.*
+    include proposal_a_open_steady_state.proposal_a_network_toolkit.*
+    include proposal_a_open_steady_state.proposal_a_equation_toolkit.*
     include proposal_a_state_estimation
+    include proposal_a_state_estimation.proposal_a_state_estimation_module.*
+    include proposal_a_open_loadflow
+    include proposal_a_open_loadflow.*
+    exclude powsybl_core.iidm.extensions.measurements -> powsybl_core.iidm.network
+    exclude powsybl_core.iidm.extensions.observability -> powsybl_core.iidm.network
+    exclude powsybl_open_loadflow.lf_network_adapter.network_loader -> powsybl_open_loadflow.lf_network
+    exclude powsybl_open_loadflow.open_loadflow_provider -> powsybl_open_loadflow.ac_dc_loadflow_engines
+    exclude powsybl_open_loadflow.ac_dc_loadflow_engines -> powsybl_open_loadflow.lf_network
+    exclude powsybl_open_loadflow.ac_dc_loadflow_engines -> powsybl_open_loadflow.equation_toolkit
+    exclude proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_measurement_preparation -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_observability_analysis
+    exclude proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_result_mapping
+    exclude proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector -> proposal_a_open_steady_state.proposal_a_equation_toolkit.proposal_a_measurement_equation_builder
     autoLayout TopBottom
 
-    style shared_state_estimation_core_api, shared_iidm_measurement_boundary, shared_math_contract {
+    style powsybl_core.iidm.network,
+      powsybl_core.iidm.extensions.measurements,
+      powsybl_core.iidm.extensions.observability {
       color indigo
     }
-    style proposal_a_open_steady_state {
-      color sky
-    }
-    style proposal_a_open_loadflow {
+    style powsybl_open_loadflow.lf_network,
+      powsybl_open_loadflow.lf_network_adapter.network_loader,
+      powsybl_open_loadflow.equation_toolkit,
+      powsybl_open_loadflow.ac_dc_loadflow_engines,
+      powsybl_open_loadflow.open_loadflow_provider {
       color green
     }
-    style proposal_a_state_estimation {
+    style proposed_state_estimation_core_api,
+      proposed_state_estimation_input_contract,
+      proposal_a_open_steady_state.**, proposal_a_open_loadflow.**, proposal_a_state_estimation.** {
       color amber
     }
   }
 
   view state_estimation_proposal_b {
-    title 'Proposal B: OLF monorepo with OpenSteadyState, Load Flow, and State Estimation modules'
-    description 'Common to both proposals: powsybl-core owns the State Estimation API, IIDM boundary, and provider discovery. Proposal B keeps OLF as one repository, split into open-steady-state, load-flow, and state-estimation modules.'
+    title 'Proposal B: powsybl-open-loadflow with OpenSteadyState, Load Flow, and State Estimation modules'
+    description 'Proposed target structure; no State Estimation API, provider, or WLS implementation exists in the current Core or Open Load Flow codebase. This overview keeps repository provenance and the State Estimation flow visible; detailed WLS and contract dependencies remain available through element context and the contracts view.'
 
-    include shared_state_estimation_core_api
-    include shared_iidm_measurement_boundary
-    include shared_math_contract
-    include proposal_b_steady_state
-    include proposal_b_loadflow
-    include proposal_b_state_estimation
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.extensions.measurements
+    include powsybl_core.iidm.extensions.observability
+    include powsybl_open_loadflow.lf_network
+    include powsybl_open_loadflow.lf_network_adapter.network_loader
+    include powsybl_open_loadflow.equation_toolkit
+    include powsybl_open_loadflow.ac_dc_loadflow_engines
+    include powsybl_open_loadflow.open_loadflow_provider
+    include proposed_state_estimation_core_api
+    include proposed_state_estimation_input_contract
+    include proposal_b_open_loadflow
+    include proposal_b_open_loadflow.proposal_b_open_steady_state
+    include proposal_b_open_loadflow.proposal_b_open_steady_state.*
+    include proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.*
+    include proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit.*
+    include proposal_b_open_loadflow.proposal_b_loadflow
+    include proposal_b_open_loadflow.proposal_b_state_estimation.*
+    exclude powsybl_core.iidm.extensions.measurements -> powsybl_core.iidm.network
+    exclude powsybl_core.iidm.extensions.observability -> powsybl_core.iidm.network
+    exclude powsybl_open_loadflow.lf_network_adapter.network_loader -> powsybl_open_loadflow.lf_network
+    exclude powsybl_open_loadflow.open_loadflow_provider -> powsybl_open_loadflow.ac_dc_loadflow_engines
+    exclude powsybl_open_loadflow.ac_dc_loadflow_engines -> powsybl_open_loadflow.lf_network
+    exclude powsybl_open_loadflow.ac_dc_loadflow_engines -> powsybl_open_loadflow.equation_toolkit
+    exclude proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_measurement_preparation -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_observability_analysis
+    exclude proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_result_mapping
+    exclude proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit.proposal_b_measurement_equation_builder
     autoLayout TopBottom
 
-    style shared_state_estimation_core_api, shared_iidm_measurement_boundary, shared_math_contract {
+    style powsybl_core.iidm.network,
+      powsybl_core.iidm.extensions.measurements,
+      powsybl_core.iidm.extensions.observability {
       color indigo
     }
-    style proposal_b_steady_state, proposal_b_loadflow, proposal_b_state_estimation {
+    style powsybl_open_loadflow.lf_network,
+      powsybl_open_loadflow.lf_network_adapter.network_loader,
+      powsybl_open_loadflow.equation_toolkit,
+      powsybl_open_loadflow.ac_dc_loadflow_engines,
+      powsybl_open_loadflow.open_loadflow_provider {
       color green
+    }
+    style proposed_state_estimation_core_api,
+      proposed_state_estimation_input_contract,
+      proposal_b_open_loadflow.** {
+      color amber
     }
   }
 }

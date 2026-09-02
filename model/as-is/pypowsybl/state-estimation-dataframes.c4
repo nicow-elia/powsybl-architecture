@@ -1,0 +1,9 @@
+model {
+  extend pypowsybl {
+    measurement_and_observability_dataframes = adapter 'Measurement and observability DataFrames' 'MeasurementsDataframeProvider, BranchObservabilityDataframeProvider, and InjectionObservabilityDataframeProvider expose existing IIDM extensions to Python.'
+  }
+
+  pypowsybl.dataframe_mappers -> pypowsybl.measurement_and_observability_dataframes 'registers providers for'
+  pypowsybl.measurement_and_observability_dataframes -> powsybl_core.iidm.extensions.measurements 'maps through'
+  pypowsybl.measurement_and_observability_dataframes -> powsybl_core.iidm.extensions.observability 'maps through'
+}

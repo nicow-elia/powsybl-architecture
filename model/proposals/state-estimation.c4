@@ -1,54 +1,149 @@
-// State-estimation placement alternatives. These are proposed components;
-// names on the shared boundary are anchored in the current OLF source tree.
-// Both views reuse the powsybl-core API, IIDM, and powsybl-math baseline from
-// shared-steady-state-boundary.c4; only the delivery placement differs.
+// Proposed State Estimation target structures. All proposal_* elements are
+// future-state alternatives; existing code is referenced through canonical
+// powsybl_core, powsybl_open_loadflow, and pypowsybl FQNs.
 model {
-  proposal_a_open_steady_state = module 'powsybl-open-steady-state' {
+  proposal_a_open_steady_state = repository 'Proposed powsybl-open-steady-state' 'Target repository created by extracting reusable network and equation toolkits from the current Open Load Flow codebase.' {
     summary 'Reusable topology, equation, derivative, and matrix toolbox.'
-    description '''
-      Shared boundary: LfNetwork and LfNetworkLoader; GraphConnectivity;
-      AdmittanceMatrix; EquationSystem and EquationSystemIndex; JacobianMatrix;
-      Evaluable and Derivable; AcVariableType.BUS_V and BUS_PHI;
-      AbstractClosedBranchAcFlowEquationTerm and
-      ClosedBranchSide1ActiveFlowEquationTerm.
-
-      Required extraction work: make JacobianMatrix support a rectangular
-      measurement Jacobian, move or retarget JacobianMatrixFastDecoupled, and
-      invert the LfHvdc dependency behind Evaluable and Derivable.
-    '''
+    proposal_a_network_toolkit = module 'Network toolkit' 'LfNetwork, LfNetworkLoader, GraphConnectivity, AdmittanceMatrix, and target topology-projection support.' {
+      proposal_a_topology_measurement_projection = component 'Node/breaker-to-bus/branch measurement projection' 'Applies switch and breaker status, reduces topology, and maps measurement locations to bus-voltage state variables.'
+    }
+    proposal_a_equation_toolkit = module 'Equation toolkit' 'EquationSystem, Evaluable, Derivable, JacobianMatrix, state variables, and reusable AC flow terms.' {
+      proposal_a_measurement_equation_builder = component 'State Estimation measurement-equation builder' 'Builds h(x) and differentiates it into H against the indexed bus-voltage state vector.'
+    }
   }
-  proposal_a_open_loadflow = module 'powsybl-open-loadflow' {
-    summary 'AC/DC engines, equation assembly, solvers, outer loops, and provider.'
-    description 'Retains AcloadFlowEngine, DcLoadFlowEngine, AcEquationSystemCreator, AcEquationSystemUpdater, AC solvers, and AC outer loops.'
+  proposal_a_open_loadflow = repository 'Proposed powsybl-open-loadflow' 'Target post-extraction repository retaining load-flow engines and providers.' {
+    proposal_a_loadflow = module 'open-loadflow' 'AC/DC load-flow engines, OpenLoadFlowProvider, solver selection, outer loops, and result mapping retained after the toolkit extraction.'
   }
-  proposal_a_state_estimation = provider 'powsybl-state-estimation' {
-    summary 'Standalone StateEstimationProvider, WLS, observability, and diagnostics.'
-    description 'Builds h(x), the measurement Jacobian H, normal equations, connected-component handling, and result mapping over the shared toolbox.'
-  }
-
-  shared_state_estimation_core_api -> proposal_a_state_estimation 'selects StateEstimationProvider through ServiceLoader'
-  shared_iidm_measurement_boundary -> proposal_a_state_estimation 'passes Network, Measurement, and Observability'
-  proposal_a_state_estimation -> proposal_a_open_steady_state 'uses shared topology, equations, and derivatives'
-  proposal_a_open_loadflow -> proposal_a_open_steady_state 'uses the shared toolbox'
-  proposal_a_open_steady_state -> shared_math_contract 'uses matrix and factorization contracts'
-  proposal_a_state_estimation -> shared_math_contract 'reuses factors for WLS diagnostics'
-
-  proposal_b_steady_state = module 'OLF monorepo: open-steady-state module' {
-    summary 'Shared topology, equations, derivatives, and matrix toolbox.'
-    description 'Contains LfNetwork, GraphConnectivity, AdmittanceMatrix, EquationSystem, rectangular JacobianMatrix, Evaluable, Derivable, AcVariableType.BUS_V/BUS_PHI, and reusable AbstractClosedBranchAcFlowEquationTerm derivatives.'
-  }
-  proposal_b_loadflow = module 'OLF monorepo: open-loadflow module' {
-    summary 'AC/DC engines, equation assembly, solvers, outer loops, and provider.'
-  }
-  proposal_b_state_estimation = provider 'OLF monorepo: state-estimation module' {
-    summary 'StateEstimationProvider, WLS, observability, and diagnostics.'
-    description 'An internal sibling of the load-flow module that consumes the OpenSteadyState module rather than a separate repository artifact.'
+  proposal_a_state_estimation = repository 'Proposed powsybl-state-estimation' 'Target standalone repository for the new estimator implementation.' {
+    proposal_a_state_estimation_module = module 'state-estimation' 'Standalone StateEstimationProvider, WLS, observability, diagnostics, and result mapping.' {
+      proposal_a_state_estimation_provider = provider 'StateEstimationProvider' 'ServiceLoader implementation that coordinates the public State Estimation API.'
+      proposal_a_measurement_preparation = component 'Measurement and covariance preparation' 'Normalizes projected bus/branch measurements, standard deviations, statuses, z, R, and W = R^-1.'
+      proposal_a_observability_analysis = component 'Observability analysis' 'Uses projected bus/branch measurement incidence to partition connected components and select observable bus-voltage states.'
+      proposal_a_wls_kernel = module 'WLS kernel' 'Iterative weighted least-squares estimator.' {
+        proposal_a_state_vector = model 'State vector x' 'Initial and updated bus-voltage magnitude and phase-angle estimate, indexed after topology projection and observability analysis.'
+        proposal_a_measurement_function = component 'Measurement function h(x) and residual r' 'Uses equation-toolkit terms to evaluate h(x) on the projected bus/branch network and computes r = z - h(x).'
+        proposal_a_measurement_jacobian = component 'Measurement Jacobian H' 'Uses the equation toolkit to differentiate h(x) against the indexed state vector.'
+        proposal_a_normal_equations = component 'Normal-equation assembly' 'Builds G = H^T W H and b = H^T W r, then prepares G delta x = b.'
+        proposal_a_gauss_newton_solver = engine 'Gauss-Newton WLS solver' 'Solves weighted corrections until convergence.'
+      }
+      proposal_a_bad_data_diagnostics = component 'Post-convergence residual and bad-data diagnostics' 'Uses residuals, H, weights, and retained factors to compute chi-square, residual-covariance, normalized-residual, and bad-data diagnostics after convergence.'
+      proposal_a_result_mapping = adapter 'State-estimation result mapping' 'Maps estimated bus/branch state and diagnostics back to IIDM-facing StateEstimationResult and StateEstimationReport.'
+    }
   }
 
-  shared_state_estimation_core_api -> proposal_b_state_estimation 'selects StateEstimationProvider through ServiceLoader'
-  shared_iidm_measurement_boundary -> proposal_b_state_estimation 'passes Network, Measurement, and Observability'
-  proposal_b_state_estimation -> proposal_b_steady_state 'uses the internal shared toolbox'
-  proposal_b_loadflow -> proposal_b_steady_state 'uses the internal shared toolbox'
-  proposal_b_steady_state -> shared_math_contract 'uses matrix and factorization contracts'
-  proposal_b_state_estimation -> shared_math_contract 'reuses factors for WLS diagnostics'
+  proposal_b_open_loadflow = repository 'Proposed powsybl-open-loadflow' 'Target structure for the normal Open Load Flow repository, split internally into OpenSteadyState, load-flow, and state-estimation modules.' {
+    proposal_b_open_steady_state = module 'open-steady-state' 'Shared network and equation toolkits used by sibling analysis modules.' {
+      proposal_b_network_toolkit = module 'Network toolkit' 'LfNetwork, LfNetworkLoader, GraphConnectivity, AdmittanceMatrix, and target topology-projection support.' {
+        proposal_b_topology_measurement_projection = component 'Node/breaker-to-bus/branch measurement projection' 'Applies switch and breaker status, reduces topology, and maps measurement locations to bus-voltage state variables.'
+      }
+      proposal_b_equation_toolkit = module 'Equation toolkit' 'EquationSystem, Evaluable, Derivable, JacobianMatrix, state variables, and reusable AC flow terms.' {
+        proposal_b_measurement_equation_builder = component 'State Estimation measurement-equation builder' 'Builds h(x) and differentiates it into H against the indexed bus-voltage state vector.'
+      }
+    }
+    proposal_b_loadflow = module 'open-loadflow' 'AC/DC load-flow engines, OpenLoadFlowProvider, solver selection, outer loops, and result mapping reorganized as the Open Load Flow analysis module.'
+    proposal_b_state_estimation = module 'state-estimation' 'StateEstimationProvider, WLS, observability, diagnostics, and result mapping.' {
+      proposal_b_state_estimation_provider = provider 'StateEstimationProvider' 'ServiceLoader implementation that coordinates the public State Estimation API.'
+      proposal_b_measurement_preparation = component 'Measurement and covariance preparation' 'Normalizes projected bus/branch measurements, standard deviations, statuses, z, R, and W = R^-1.'
+      proposal_b_observability_analysis = component 'Observability analysis' 'Uses projected bus/branch measurement incidence to partition connected components and select observable bus-voltage states.'
+      proposal_b_wls_kernel = module 'WLS kernel' 'Iterative weighted least-squares estimator.' {
+        proposal_b_state_vector = model 'State vector x' 'Initial and updated bus-voltage magnitude and phase-angle estimate, indexed after topology projection and observability analysis.'
+        proposal_b_measurement_function = component 'Measurement function h(x) and residual r' 'Uses equation-toolkit terms to evaluate h(x) on the projected bus/branch network and computes r = z - h(x).'
+        proposal_b_measurement_jacobian = component 'Measurement Jacobian H' 'Uses the equation toolkit to differentiate h(x) against the indexed state vector.'
+        proposal_b_normal_equations = component 'Normal-equation assembly' 'Builds G = H^T W H and b = H^T W r, then prepares G delta x = b.'
+        proposal_b_gauss_newton_solver = engine 'Gauss-Newton WLS solver' 'Solves weighted corrections until convergence.'
+      }
+      proposal_b_bad_data_diagnostics = component 'Post-convergence residual and bad-data diagnostics' 'Uses residuals, H, weights, and retained factors to compute chi-square, residual-covariance, normalized-residual, and bad-data diagnostics after convergence.'
+      proposal_b_result_mapping = adapter 'State-estimation result mapping' 'Maps estimated bus/branch state and diagnostics back to IIDM-facing StateEstimationResult and StateEstimationReport.'
+    }
+  }
+
+  powsybl_open_loadflow.lf_network -> proposal_a_open_steady_state.proposal_a_network_toolkit 'would be extracted into'
+  powsybl_open_loadflow.lf_network_adapter.network_loader -> proposal_a_open_steady_state.proposal_a_network_toolkit 'would move with'
+  powsybl_open_loadflow.equation_toolkit -> proposal_a_open_steady_state.proposal_a_equation_toolkit 'would be extracted into'
+  powsybl_open_loadflow.open_loadflow_provider -> proposal_a_open_loadflow.proposal_a_loadflow 'would remain in'
+  powsybl_open_loadflow.ac_dc_loadflow_engines -> proposal_a_open_loadflow.proposal_a_loadflow 'would remain in'
+  proposal_a_open_steady_state.proposal_a_network_toolkit -> proposal_a_open_steady_state.proposal_a_equation_toolkit 'would supply topology and admittance to'
+  proposal_a_open_steady_state.proposal_a_equation_toolkit -> proposed_rectangular_measurement_jacobian 'would expose support for'
+  proposal_a_open_steady_state.proposal_a_equation_toolkit -> proposed_reusable_ac_measurement_terms 'would publish through'
+  proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection -> proposed_bus_branch_measurement_projection 'would implement'
+  proposal_a_open_loadflow.proposal_a_loadflow -> proposal_a_open_steady_state.proposal_a_network_toolkit 'would use the target network toolkit'
+  proposal_a_open_loadflow.proposal_a_loadflow -> proposal_a_open_steady_state.proposal_a_equation_toolkit 'would use the target equation toolkit'
+  proposed_state_estimation_core_api -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_state_estimation_provider 'would discover through ServiceLoader'
+  proposed_state_estimation_input_contract -> proposal_a_state_estimation.proposal_a_state_estimation_module 'would define inputs and results for'
+  proposed_state_estimation_input_contract -> proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection 'would provide IIDM topology, switch status, and measurement metadata to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module -> proposal_a_open_steady_state.proposal_a_network_toolkit 'would use the target network toolkit'
+  proposal_a_state_estimation.proposal_a_state_estimation_module -> proposal_a_open_steady_state.proposal_a_equation_toolkit 'would use the target equation toolkit'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_state_estimation_provider -> proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection 'would start topology and measurement projection through'
+  proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_measurement_preparation 'would provide projected measurement locations to'
+  proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_observability_analysis 'would provide reduced topology and measurement-to-state incidence to'
+  proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector 'would initialize and index'
+  proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection -> proposal_a_open_steady_state.proposal_a_equation_toolkit.proposal_a_measurement_equation_builder 'would provide reduced topology and measurement mappings to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_measurement_preparation -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_observability_analysis 'would provide usable measurement statuses to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_measurement_preparation -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_function 'would provide z and measurement descriptors to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_measurement_preparation -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_normal_equations 'would provide R and W to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_observability_analysis -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector 'selects observable variables for'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector -> proposal_a_open_steady_state.proposal_a_equation_toolkit.proposal_a_measurement_equation_builder 'would supply indexed variables to'
+  proposal_a_open_steady_state.proposal_a_equation_toolkit.proposal_a_measurement_equation_builder -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_function 'would build h(x) for'
+  proposal_a_open_steady_state.proposal_a_equation_toolkit.proposal_a_measurement_equation_builder -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_jacobian 'would differentiate h(x) to build'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_function 'would be evaluated by'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_jacobian 'would index columns for'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_function -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_normal_equations 'supplies residuals to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_jacobian -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_normal_equations 'supplies derivatives to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_normal_equations -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_gauss_newton_solver 'solves weighted corrections with'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_gauss_newton_solver -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector 'updates'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_function -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_bad_data_diagnostics 'would provide residuals to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_measurement_jacobian -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_bad_data_diagnostics 'would provide H to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_normal_equations -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_bad_data_diagnostics 'would provide weighted-system factors to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_gauss_newton_solver -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_bad_data_diagnostics 'would trigger post-convergence processing in'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_bad_data_diagnostics -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_result_mapping 'adds diagnostics to'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_state_vector -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_result_mapping 'provides estimated state to'
+  proposal_a_open_steady_state.proposal_a_network_toolkit.proposal_a_topology_measurement_projection -> proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_result_mapping 'would map bus/branch estimates back to IIDM elements through'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_normal_equations -> proposed_rectangular_measurement_jacobian 'would require'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_wls_kernel.proposal_a_normal_equations -> proposed_retained_factorization 'would require'
+  proposal_a_state_estimation.proposal_a_state_estimation_module.proposal_a_result_mapping -> proposed_state_estimation_core_api 'would return results through'
+
+  powsybl_open_loadflow.lf_network -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit 'would be reorganized into'
+  powsybl_open_loadflow.lf_network_adapter.network_loader -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit 'would move into'
+  powsybl_open_loadflow.equation_toolkit -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit 'would be reorganized into'
+  powsybl_open_loadflow.open_loadflow_provider -> proposal_b_open_loadflow.proposal_b_loadflow 'would be organized into'
+  powsybl_open_loadflow.ac_dc_loadflow_engines -> proposal_b_open_loadflow.proposal_b_loadflow 'would be organized into'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit 'would supply topology and admittance to'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit -> proposed_rectangular_measurement_jacobian 'would expose support for'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit -> proposed_reusable_ac_measurement_terms 'would publish through'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection -> proposed_bus_branch_measurement_projection 'would implement'
+  proposal_b_open_loadflow.proposal_b_loadflow -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit 'would use the target network toolkit'
+  proposal_b_open_loadflow.proposal_b_loadflow -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit 'would use the target equation toolkit'
+  proposed_state_estimation_core_api -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_state_estimation_provider 'would discover through ServiceLoader'
+  proposed_state_estimation_input_contract -> proposal_b_open_loadflow.proposal_b_state_estimation 'would define inputs and results for'
+  proposed_state_estimation_input_contract -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection 'would provide IIDM topology, switch status, and measurement metadata to'
+  proposal_b_open_loadflow.proposal_b_state_estimation -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit 'would use the target network toolkit'
+  proposal_b_open_loadflow.proposal_b_state_estimation -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit 'would use the target equation toolkit'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection 'would start topology and measurement projection through'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_measurement_preparation 'would provide projected measurement locations to'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_observability_analysis 'would provide reduced topology and measurement-to-state incidence to'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector 'would initialize and index'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit.proposal_b_measurement_equation_builder 'would provide reduced topology and measurement mappings to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_measurement_preparation -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_observability_analysis 'would provide usable measurement statuses to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_measurement_preparation -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_function 'would provide z and measurement descriptors to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_measurement_preparation -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_normal_equations 'would provide R and W to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_observability_analysis -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector 'selects observable variables for'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector -> proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit.proposal_b_measurement_equation_builder 'would supply indexed variables to'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit.proposal_b_measurement_equation_builder -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_function 'would build h(x) for'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_equation_toolkit.proposal_b_measurement_equation_builder -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_jacobian 'would differentiate h(x) to build'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_function 'would be evaluated by'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_jacobian 'would index columns for'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_function -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_normal_equations 'supplies residuals to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_jacobian -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_normal_equations 'supplies derivatives to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_normal_equations -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_gauss_newton_solver 'solves weighted corrections with'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_gauss_newton_solver -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector 'updates'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_function -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_bad_data_diagnostics 'would provide residuals to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_measurement_jacobian -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_bad_data_diagnostics 'would provide H to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_normal_equations -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_bad_data_diagnostics 'would provide weighted-system factors to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_gauss_newton_solver -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_bad_data_diagnostics 'would trigger post-convergence processing in'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_bad_data_diagnostics -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_result_mapping 'adds diagnostics to'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_state_vector -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_result_mapping 'provides estimated state to'
+  proposal_b_open_loadflow.proposal_b_open_steady_state.proposal_b_network_toolkit.proposal_b_topology_measurement_projection -> proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_result_mapping 'would map bus/branch estimates back to IIDM elements through'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_normal_equations -> proposed_rectangular_measurement_jacobian 'would require'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_wls_kernel.proposal_b_normal_equations -> proposed_retained_factorization 'would require'
+  proposal_b_open_loadflow.proposal_b_state_estimation.proposal_b_result_mapping -> proposed_state_estimation_core_api 'would return results through'
 }

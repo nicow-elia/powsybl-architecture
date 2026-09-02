@@ -1,0 +1,49 @@
+views {
+  view state_estimation_proposed_contracts {
+    title 'Proposed State Estimation and OpenSteadyState contracts'
+    description 'Proposed change inventory. Indigo, green, and sky elements describe current source-backed components; amber elements are not present in the current codebase and define the required State Estimation and OpenSteadyState changes.'
+
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.extensions.measurements
+    include powsybl_core.iidm.extensions.observability
+    include powsybl_core.iidm.extensions.transformer_estimation_flags
+    include powsybl_core.math
+    include powsybl_open_loadflow.lf_network
+    include powsybl_open_loadflow.lf_network_adapter.network_loader
+    include powsybl_open_loadflow.equation_toolkit.equation_system
+    include powsybl_open_loadflow.equation_toolkit.ac_equation_builder
+    include pypowsybl.measurement_and_observability_dataframes
+    include proposed_state_estimation_core_api
+    include proposed_state_estimation_input_contract
+    include proposed_bus_branch_measurement_projection
+    include proposed_rectangular_measurement_jacobian
+    include proposed_retained_factorization
+    include proposed_reusable_ac_measurement_terms
+    autoLayout LeftRight
+
+    style powsybl_core.iidm.network,
+      powsybl_core.iidm.extensions.measurements,
+      powsybl_core.iidm.extensions.observability,
+      powsybl_core.iidm.extensions.transformer_estimation_flags,
+      powsybl_core.math {
+      color indigo
+    }
+    style powsybl_open_loadflow.lf_network,
+      powsybl_open_loadflow.lf_network_adapter.network_loader,
+      powsybl_open_loadflow.equation_toolkit.equation_system,
+      powsybl_open_loadflow.equation_toolkit.ac_equation_builder {
+      color green
+    }
+    style pypowsybl.measurement_and_observability_dataframes {
+      color sky
+    }
+    style proposed_state_estimation_core_api,
+      proposed_state_estimation_input_contract,
+      proposed_bus_branch_measurement_projection,
+      proposed_rectangular_measurement_jacobian,
+      proposed_retained_factorization,
+      proposed_reusable_ac_measurement_terms {
+      color amber
+    }
+  }
+}

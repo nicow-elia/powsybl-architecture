@@ -1,0 +1,11 @@
+model {
+  extend powsybl_core.iidm.extensions {
+    measurements = component 'Measurements and discrete measurements extensions' 'Measurement, Measurements, MeasurementAdder, DiscreteMeasurement, and DiscreteMeasurements attach measured values and properties to IIDM equipment.'
+    observability = component 'Observability extensions' 'Observability, BranchObservability, InjectionObservability, ObservabilityArea, and ObservabilityQuality annotate IIDM equipment and topology.'
+    transformer_estimation_flags = component 'Transformer estimation flags' 'TwoWindingsTransformerToBeEstimated and ThreeWindingsTransformerToBeEstimated mark transformer equipment for estimation.'
+  }
+
+  powsybl_core.iidm.extensions.measurements -> powsybl_core.iidm.network 'attach measurement data to'
+  powsybl_core.iidm.extensions.observability -> powsybl_core.iidm.network 'annotate equipment and topology on'
+  powsybl_core.iidm.extensions.transformer_estimation_flags -> powsybl_core.iidm.transformers 'annotate equipment in'
+}
