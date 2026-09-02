@@ -1,0 +1,53 @@
+// The package/API boundary is intentionally identical in Proposals A and B.
+// Only its delivery unit changes: a standalone repository in A or a module in B.
+model {
+  shared_state_estimation_core_api = api 'powsybl-core State Estimation API' {
+    summary 'StateEstimation, StateEstimationProvider, StateEstimationParameters, StateEstimationRunParameters, StateEstimationResult, and StateEstimationReport.'
+    description 'Common public contract in both proposals. powsybl-core discovers a StateEstimationProvider through ServiceLoader; only the implementation placement changes between Proposal A and Proposal B.'
+  }
+  shared_iidm_measurement_boundary = model 'IIDM measurement and result contract' {
+    summary 'Network, Measurement, Observability, and their extensions.'
+    description 'Common IIDM-facing input and result boundary in both proposals.'
+  }
+  shared_math_contract = component 'powsybl-math matrix contract' {
+    summary 'MatrixFactory, Matrix, DenseMatrix, and LUDecomposition.'
+    description 'Common numerical contract in both proposals. LUDecomposition already belongs to powsybl-math; the proposed OpenSteadyState change is to retain and expose caller-controlled factorization so state estimation can batch solve(DenseMatrix) for WLS diagnostics.'
+  }
+  shared_open_steady_state = module 'OpenSteadyState shared toolbox' {
+    summary 'Reusable topology, admittance, equation, derivative, Jacobian, state-variable, and AC P/Q/I flow-term contracts.'
+    description 'Proposal A delivers this as powsybl-open-steady-state. Proposal B delivers it as the open-steady-state module inside the OLF monorepo.'
+  }
+  shared_loadflow_only = module 'Load-flow-only layer' {
+    summary 'AcloadFlowEngine, DcLoadFlowEngine, AcEquationSystemCreator, AcEquationSystemUpdater, AC solvers, outer loops, and OpenLoadFlowProvider.'
+    description 'JacobianMatrixFastDecoupled remains load-flow specific and stays outside the shared boundary.'
+  }
+  shared_state_estimation_logic = provider 'State-estimation-only layer' {
+    summary 'Measurement normalization, h(x), H, WLS, observability, residual diagnostics, and result mapping.'
+  }
+
+  shared_topology_admittance = component 'OpenSteadyState: topology and admittance' {
+    summary 'LfNetwork, LfNetworkLoader, LfNetworkLoaderImpl, GraphConnectivity, and AdmittanceMatrix.'
+  }
+  shared_equation_derivatives = component 'OpenSteadyState: equations and derivatives' {
+    summary 'EquationSystem, EquationSystemIndex, Evaluable, and Derivable.'
+    description 'The LfHvdc dependency is inverted behind Evaluable and Derivable so the shared network model does not depend on AC equation implementations.'
+  }
+  shared_jacobian_state = component 'OpenSteadyState: Jacobian and state variables' {
+    summary 'JacobianMatrix supports a rectangular measurement Jacobian H; AcVariableType.BUS_V and BUS_PHI define the state vector.'
+  }
+  shared_ac_flow_terms = component 'OpenSteadyState: AC P/Q/I flow terms' {
+    summary 'AbstractClosedBranchAcFlowEquationTerm and ClosedBranchSide1ActiveFlowEquationTerm provide reusable h(x) and derivatives.'
+  }
+
+  shared_state_estimation_core_api -> shared_state_estimation_logic 'selects StateEstimationProvider through ServiceLoader'
+  shared_iidm_measurement_boundary -> shared_state_estimation_logic 'passes Network, Measurement, and Observability'
+  shared_state_estimation_logic -> shared_open_steady_state 'uses the shared toolbox'
+  shared_loadflow_only -> shared_open_steady_state 'uses the shared toolbox'
+  shared_open_steady_state -> shared_math_contract 'uses matrix and factorization contracts'
+  shared_state_estimation_logic -> shared_math_contract 'reuses factors for WLS diagnostics'
+
+  shared_topology_admittance -> shared_equation_derivatives 'supplies the electrical network model to'
+  shared_ac_flow_terms -> shared_equation_derivatives 'implements P/Q/I terms for'
+  shared_equation_derivatives -> shared_jacobian_state 'evaluates and differentiates through'
+  shared_jacobian_state -> shared_math_contract 'factorizes through'
+}

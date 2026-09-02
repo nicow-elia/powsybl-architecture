@@ -1,0 +1,44 @@
+specification {
+  element repository
+  element module
+  element api
+  element provider
+  element adapter
+  element model
+  element component
+  element binding
+}
+
+// Cross-project diagrams use local representations of public integration
+// surfaces, allowing their relationships to retain their actual direction.
+model {
+  python_surface = api 'pypowsybl: Python APIs and DataFrames' 'Python domain APIs, Network wrappers, and pandas DataFrame adapters.' {
+    technology 'Python and pandas'
+  }
+  java_bridge = binding 'pypowsybl: Native and Java bridge' 'pybind11, GraalVM native-image calls, and Java C entry points.' {
+    technology 'C++, GraalVM native image, and Java'
+  }
+
+  iidm_network = model 'powsybl-core: IIDM Network' 'Shared mutable electrical network and working variant.'
+  analysis_apis = api 'powsybl-core: Analysis APIs and SPIs' 'Load flow, sensitivity, and security-analysis runners and provider contracts.'
+  contingency_api = api 'powsybl-core: Contingency API' 'Contingencies, actions, operator strategies, and sensitivity factors.'
+  provider_discovery = component 'powsybl-core: Provider discovery' 'ServiceLoader discovery of registered analysis providers.'
+
+  analysis_providers = provider 'powsybl-open-loadflow: Analysis providers' 'OpenLoadFlowProvider, OpenSensitivityAnalysisProvider, and OpenSecurityAnalysisProvider.'
+  lf_network_adapter = adapter 'powsybl-open-loadflow: IIDM to LfNetwork adapter' 'Networks and LfNetworkLoaderImpl convert IIDM equipment and topology.'
+  contingency_propagation = adapter 'powsybl-open-loadflow: Contingency propagation' 'PropagatedContingency and topology-tripping adapters.'
+
+  python_surface -> java_bridge 'calls native bindings and maps pandas data'
+  java_bridge -> iidm_network 'binds Network handles'
+  java_bridge -> analysis_apis 'binds computation APIs'
+
+  analysis_apis -> iidm_network 'runs against the shared Network'
+  analysis_apis -> contingency_api 'uses contingency and action inputs'
+  analysis_apis -> provider_discovery 'selects a provider through'
+  provider_discovery -> analysis_providers 'discovers through ServiceLoader'
+  iidm_network -> lf_network_adapter 'maps to a solver network'
+  contingency_api -> contingency_propagation 'maps outages to solver contingencies'
+
+  analysis_providers -> lf_network_adapter 'runs load flow and sensitivity over'
+  analysis_providers -> contingency_propagation 'runs security analysis through'
+}

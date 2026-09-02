@@ -1,0 +1,47 @@
+views {
+  view state_estimation_proposal_a {
+    title 'Proposal A: Separate OpenSteadyState and State Estimation repositories'
+    description 'Common to both proposals: powsybl-core owns the State Estimation API, IIDM boundary, and provider discovery. Proposal A extracts powsybl-open-steady-state as a reusable artifact; powsybl-open-loadflow and a standalone powsybl-state-estimation provider depend on it.'
+
+    include shared_state_estimation_core_api
+    include shared_iidm_measurement_boundary
+    include shared_math_contract
+    include proposal_a_open_steady_state
+    include proposal_a_open_loadflow
+    include proposal_a_state_estimation
+    autoLayout TopBottom
+
+    style shared_state_estimation_core_api, shared_iidm_measurement_boundary, shared_math_contract {
+      color indigo
+    }
+    style proposal_a_open_steady_state {
+      color sky
+    }
+    style proposal_a_open_loadflow {
+      color green
+    }
+    style proposal_a_state_estimation {
+      color amber
+    }
+  }
+
+  view state_estimation_proposal_b {
+    title 'Proposal B: OLF monorepo with OpenSteadyState, Load Flow, and State Estimation modules'
+    description 'Common to both proposals: powsybl-core owns the State Estimation API, IIDM boundary, and provider discovery. Proposal B keeps OLF as one repository, split into open-steady-state, load-flow, and state-estimation modules.'
+
+    include shared_state_estimation_core_api
+    include shared_iidm_measurement_boundary
+    include shared_math_contract
+    include proposal_b_steady_state
+    include proposal_b_loadflow
+    include proposal_b_state_estimation
+    autoLayout TopBottom
+
+    style shared_state_estimation_core_api, shared_iidm_measurement_boundary, shared_math_contract {
+      color indigo
+    }
+    style proposal_b_steady_state, proposal_b_loadflow, proposal_b_state_estimation {
+      color green
+    }
+  }
+}

@@ -1,0 +1,54 @@
+// State-estimation placement alternatives. These are proposed components;
+// names on the shared boundary are anchored in the current OLF source tree.
+// Both views reuse the powsybl-core API, IIDM, and powsybl-math baseline from
+// shared-steady-state-boundary.c4; only the delivery placement differs.
+model {
+  proposal_a_open_steady_state = module 'powsybl-open-steady-state' {
+    summary 'Reusable topology, equation, derivative, and matrix toolbox.'
+    description '''
+      Shared boundary: LfNetwork and LfNetworkLoader; GraphConnectivity;
+      AdmittanceMatrix; EquationSystem and EquationSystemIndex; JacobianMatrix;
+      Evaluable and Derivable; AcVariableType.BUS_V and BUS_PHI;
+      AbstractClosedBranchAcFlowEquationTerm and
+      ClosedBranchSide1ActiveFlowEquationTerm.
+
+      Required extraction work: make JacobianMatrix support a rectangular
+      measurement Jacobian, move or retarget JacobianMatrixFastDecoupled, and
+      invert the LfHvdc dependency behind Evaluable and Derivable.
+    '''
+  }
+  proposal_a_open_loadflow = module 'powsybl-open-loadflow' {
+    summary 'AC/DC engines, equation assembly, solvers, outer loops, and provider.'
+    description 'Retains AcloadFlowEngine, DcLoadFlowEngine, AcEquationSystemCreator, AcEquationSystemUpdater, AC solvers, and AC outer loops.'
+  }
+  proposal_a_state_estimation = provider 'powsybl-state-estimation' {
+    summary 'Standalone StateEstimationProvider, WLS, observability, and diagnostics.'
+    description 'Builds h(x), the measurement Jacobian H, normal equations, connected-component handling, and result mapping over the shared toolbox.'
+  }
+
+  shared_state_estimation_core_api -> proposal_a_state_estimation 'selects StateEstimationProvider through ServiceLoader'
+  shared_iidm_measurement_boundary -> proposal_a_state_estimation 'passes Network, Measurement, and Observability'
+  proposal_a_state_estimation -> proposal_a_open_steady_state 'uses shared topology, equations, and derivatives'
+  proposal_a_open_loadflow -> proposal_a_open_steady_state 'uses the shared toolbox'
+  proposal_a_open_steady_state -> shared_math_contract 'uses matrix and factorization contracts'
+  proposal_a_state_estimation -> shared_math_contract 'reuses factors for WLS diagnostics'
+
+  proposal_b_steady_state = module 'OLF monorepo: open-steady-state module' {
+    summary 'Shared topology, equations, derivatives, and matrix toolbox.'
+    description 'Contains LfNetwork, GraphConnectivity, AdmittanceMatrix, EquationSystem, rectangular JacobianMatrix, Evaluable, Derivable, AcVariableType.BUS_V/BUS_PHI, and reusable AbstractClosedBranchAcFlowEquationTerm derivatives.'
+  }
+  proposal_b_loadflow = module 'OLF monorepo: open-loadflow module' {
+    summary 'AC/DC engines, equation assembly, solvers, outer loops, and provider.'
+  }
+  proposal_b_state_estimation = provider 'OLF monorepo: state-estimation module' {
+    summary 'StateEstimationProvider, WLS, observability, and diagnostics.'
+    description 'An internal sibling of the load-flow module that consumes the OpenSteadyState module rather than a separate repository artifact.'
+  }
+
+  shared_state_estimation_core_api -> proposal_b_state_estimation 'selects StateEstimationProvider through ServiceLoader'
+  shared_iidm_measurement_boundary -> proposal_b_state_estimation 'passes Network, Measurement, and Observability'
+  proposal_b_state_estimation -> proposal_b_steady_state 'uses the internal shared toolbox'
+  proposal_b_loadflow -> proposal_b_steady_state 'uses the internal shared toolbox'
+  proposal_b_steady_state -> shared_math_contract 'uses matrix and factorization contracts'
+  proposal_b_state_estimation -> shared_math_contract 'reuses factors for WLS diagnostics'
+}

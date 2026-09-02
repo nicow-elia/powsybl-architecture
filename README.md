@@ -1,32 +1,31 @@
 # Powsybl Architecture
 
 This directory is a LikeC4 workspace for the repositories checked out beside it.
-Each immediate subdirectory with a `likec4.config.json` file is a separate
-LikeC4 project. The `powsybl-core` project imports the top-level
-`powsybl-open-loadflow` element and owns the cross-project workflow views.
 
-The workspace currently contains projects for `powsybl-core`,
-`powsybl-open-loadflow`, and `pypowsybl`.
+`https://nicow-elia.github.io/powsybl-architecture/`
 
-## Views
+## Cross-Project Views
 
-- `powsybl-core/index`: Repository structure for powsybl-core.
-- `powsybl-core/iidm-model`: IIDM `Network`, principal model interfaces, and
-  supported format-provider paths for loading and saving networks.
-- `powsybl-core/loadflow-interaction`: Core Load Flow API and the Open Load
-  Flow AC/DC execution path.
-- `powsybl-core/sensitivity-interaction`: Core Sensitivity Analysis API and
-  the Open Load Flow sensitivity engines.
-- `powsybl-core/contingency-analysis-interaction`: Core Security Analysis and
-  contingency APIs through Open Load Flow contingency propagation.
-- `powsybl-core/iidm-network-interaction`: IIDM `Network` composition and its
-  role as the shared object passed to all computations.
-- `pypowsybl/index`: Python facades, pandas DataFrame adapters, pybind11,
-  GraalVM native-image bridge, and Java C entry points.
+The `toplevel` LikeC4 project owns views that span repository boundaries. Its
+`index` view, **Powsybl: APIs, Python bindings, and providers**, describes how
+pypowsybl exposes the powsybl-core contracts and how Core discovers the Open
+Load Flow providers.
 
-The models describe source-level public interfaces and principal implementation
-components, rather than Maven modules or every Java package. Keep relationships
-aligned with the provider SPI contracts and the IIDM-to-`LfNetwork` adapter.
+The same project also contains the state-estimation placement alternatives:
+
+- `state_estimation_proposal_a`: standalone `powsybl-open-steady-state` and
+	`powsybl-state-estimation` repositories.
+- `state_estimation_proposal_b`: one OLF repository split into open-steady-state,
+	load-flow, and state-estimation modules.
+- `shared_steady_state_boundary`: the reusable topology, equation, derivative,
+	and matrix contracts common to both proposals.
+- `shared_steady_state_interfaces`: the named OpenSteadyState helper and matrix
+	interfaces on that reusable boundary.
+
+Both placement views highlight the same `powsybl-core` State Estimation API:
+`StateEstimation`, `StateEstimationProvider`, `StateEstimationParameters`,
+`StateEstimationRunParameters`, `StateEstimationResult`, and
+`StateEstimationReport`. Only the provider implementation's placement differs.
 
 ## Preview Locally
 
@@ -37,52 +36,9 @@ Node.js dependency to any of the repositories. From this directory, run:
 ./serve_architecture_diagrams.sh
 ```
 
-Open <http://127.0.0.1:5173> in a browser. LikeC4 shows the project overview at
-the root of this multi-project workspace; select a repository to browse its
-views. The server watches the LikeC4 source files and updates the diagrams when
-they change. The script requires a running Docker daemon. Its optional arguments
-are the source directory and HTTP port:
-
-```sh
-./serve_architecture_diagrams.sh . 5174
-```
-
-Set `HMR_PORT` when running more than one server, for example
-`HMR_PORT=24679 ./serve_architecture_diagrams.sh . 5174`.
-
 With Node.js and npm available, the same server can instead be started directly:
 
 ```sh
 npx likec4 start
 ```
 
-## Publish to GitHub Pages
-
-On every push to `main`, [publish-pages.yml](.github/workflows/publish-pages.yml)
-builds the static LikeC4 app and publishes it to the `gh-pages` branch. The
-published root page links directly to the `powsybl-core/index` view, avoiding the
-multi-project picker as the public entry point.
-
-Enable GitHub Pages once in the repository settings with `Deploy from a branch`,
-branch `gh-pages`, and folder `/(root)`. The standard public URL is
-`https://nicow-elia.github.io/powsybl-architecture/`.
-
-Build the same static site locally with:
-
-```sh
-./build_architecture_app.sh
-```
-
-The generated site is written to `site/` and is intentionally not committed.
-
-## Open
-
-Open the `architecture` folder in the LikeC4 extension, or validate from this
-directory with a LikeC4 CLI installation:
-
-```sh
-likec4 validate .
-```
-
-See <https://likec4.dev/dsl/config/multi-projects/> for the multi-project
-configuration model.

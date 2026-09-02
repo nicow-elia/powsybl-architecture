@@ -39,12 +39,19 @@
         margin: 0 0 28px;
       }
 
+      nav {
+        display: grid;
+        gap: 12px;
+        width: min(100%, 400px);
+      }
+
       a {
         background: #2563eb;
         border-radius: 6px;
         color: #ffffff;
-        display: inline-block;
+        display: block;
         font-weight: 700;
+        overflow-wrap: anywhere;
         padding: 12px 16px;
         text-decoration: none;
       }
@@ -69,8 +76,17 @@
   <body>
     <main>
       <h1>Powsybl Architecture</h1>
-      <p>Explore the repository structure, IIDM model, and analysis views.</p>
-      <a href="./app/#/project/powsybl-core/view/index/">Open architecture diagrams</a>
+      <p>Explore the cross-project architecture, repository structure, IIDM model, and analysis views.</p>
+      <nav aria-label="Architecture projects">
+        <a href="./app/#/project/toplevel/view/index/">Powsybl integration</a>
+        <a href="./app/#/project/toplevel/view/state_estimation_proposal_a/">State estimation Proposal A</a>
+        <a href="./app/#/project/toplevel/view/state_estimation_proposal_b/">State estimation Proposal B</a>
+        <a href="./app/#/project/toplevel/view/shared_steady_state_boundary/">OpenSteadyState shared boundary</a>
+        <a href="./app/#/project/toplevel/view/shared_steady_state_interfaces/">OpenSteadyState interface inventory</a>
+        <a href="./app/#/project/powsybl-core/view/index/">powsybl-core</a>
+        <a href="./app/#/project/powsybl-open-loadflow/view/index/">powsybl-open-loadflow</a>
+        <a href="./app/#/project/pypowsybl/view/index/">pypowsybl</a>
+      </nav>
     </main>
   </body>
 </html>
