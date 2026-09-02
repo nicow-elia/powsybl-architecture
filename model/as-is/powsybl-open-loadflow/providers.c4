@@ -1,8 +1,14 @@
 model {
   extend powsybl_open_loadflow {
-    open_loadflow_provider = provider 'OpenLoadFlowProvider' 'Implements LoadFlowProvider for AC and DC load flows.'
-    open_sensitivity_provider = provider 'OpenSensitivityAnalysisProvider' 'Implements SensitivityAnalysisProvider.'
-    open_security_provider = provider 'OpenSecurityAnalysisProvider' 'Implements SecurityAnalysisProvider.'
+    open_loadflow_provider = provider 'OpenLoadFlowProvider' 'Implements LoadFlowProvider for AC and DC load flows.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/OpenLoadFlowProvider.html
+    }
+    open_sensitivity_provider = provider 'OpenSensitivityAnalysisProvider' 'Implements SensitivityAnalysisProvider.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/sensi/OpenSensitivityAnalysisProvider.html
+    }
+    open_security_provider = provider 'OpenSecurityAnalysisProvider' 'Implements SecurityAnalysisProvider.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/sa/OpenSecurityAnalysisProvider.html
+    }
   }
 
   powsybl_open_loadflow.open_loadflow_provider -> powsybl_open_loadflow.ac_dc_loadflow_engines 'runs AC or DC calculation'

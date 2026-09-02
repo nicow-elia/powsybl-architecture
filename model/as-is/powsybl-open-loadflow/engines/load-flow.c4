@@ -1,14 +1,31 @@
 model {
   extend powsybl_open_loadflow {
     ac_dc_loadflow_engines = engine 'AC/DC load-flow engines' 'AcloadFlowEngine, DcLoadFlowEngine, AC solvers, and outer loops.' {
-      load_flow_request = api 'Load-flow run and OpenLoadFlowParameters' 'Selects the AC solver, topology options, controls, and reporting level.'
-      ac_load_flow_engine = engine 'AcloadFlowEngine' 'Coordinates AC equation construction, solver calls, outer loops, and final status.'
-      dc_load_flow_engine = engine 'DcLoadFlowEngine' 'Coordinates classic DC load flow.'
-      ac_solver_factory = component 'AcSolverFactory' 'Validates parameter compatibility and selects the configured AC solver.'
-      newton_raphson = engine 'Newton-Raphson solver' 'Default nonlinear AC solver.'
-      newton_krylov = engine 'Newton-Krylov solver' 'Nonlinear AC solver using Krylov methods.'
-      fast_decoupled = engine 'Fast-Decoupled solver' 'AC solver that separates active/angle and reactive/voltage-magnitude iterations.'
-      outer_loop_chain = component 'AC outer-loop chain' 'Voltage, reactive-limit, phase-shifter, and active-power-distribution controls that may request another solve.'
+      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/loadflow.html
+      load_flow_request = api 'Load-flow run and OpenLoadFlowParameters' 'Selects the AC solver, topology options, controls, and reporting level.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/OpenLoadFlowParameters.html
+      }
+      ac_load_flow_engine = engine 'AcloadFlowEngine' 'Coordinates AC equation construction, solver calls, outer loops, and final status.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/ac/AcloadFlowEngine.html
+      }
+      dc_load_flow_engine = engine 'DcLoadFlowEngine' 'Coordinates classic DC load flow.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/dc/DcLoadFlowEngine.html
+      }
+      ac_solver_factory = component 'AcSolverFactory' 'Validates parameter compatibility and selects the configured AC solver.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/ac/solver/AcSolverFactory.html
+      }
+      newton_raphson = engine 'NewtonRaphson' 'Default nonlinear AC solver.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/ac/solver/NewtonRaphson.html
+      }
+      newton_krylov = engine 'NewtonKrylov' 'Nonlinear AC solver using Krylov methods.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/ac/solver/NewtonKrylov.html
+      }
+      fast_decoupled = engine 'FastDecoupled' 'AC solver that separates active/angle and reactive/voltage-magnitude iterations.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/ac/solver/FastDecoupled.html
+      }
+      outer_loop_chain = component 'AC outer-loop chain' 'Voltage, reactive-limit, phase-shifter, and active-power-distribution controls that may request another solve.' {
+        link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/advanced_programming/outerloop_configuration.html
+      }
     }
   }
 

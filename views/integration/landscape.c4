@@ -1,0 +1,53 @@
+views {
+  view index {
+    title 'Powsybl: APIs, Python bindings, and providers'
+    description 'pypowsybl binds Powsybl public APIs into Python objects and pandas DataFrames. powsybl-core owns the IIDM Network and provider SPIs. powsybl-open-loadflow supplies the AC/DC load-flow, sensitivity, and security-analysis provider implementations selected by Core.'
+
+    include pypowsybl.python_api
+    include pypowsybl.python_network
+    include pypowsybl.dataframe_views
+    include pypowsybl.pybind_extension
+    include pypowsybl.native_image_bridge
+    include pypowsybl.java_bindings
+    include pypowsybl.java_bindings.*
+    include pypowsybl.dataframe_mappers
+    include powsybl_core.iidm.network
+    include powsybl_core.loadflow_api
+    include powsybl_core.sensitivity_api
+    include powsybl_core.security_analysis_api
+    include powsybl_core.contingency_api
+    include powsybl_core.commons
+    include powsybl_open_loadflow.open_loadflow_provider
+    include powsybl_open_loadflow.open_sensitivity_provider
+    include powsybl_open_loadflow.open_security_provider
+    include powsybl_open_loadflow.lf_network_adapter
+    include powsybl_open_loadflow.contingency_propagation
+    autoLayout LeftRight
+
+    style pypowsybl.python_api,
+      pypowsybl.python_network,
+      pypowsybl.dataframe_views,
+      pypowsybl.pybind_extension,
+      pypowsybl.native_image_bridge,
+      pypowsybl.java_bindings,
+      pypowsybl.java_bindings.*,
+      pypowsybl.dataframe_mappers {
+      color sky
+    }
+    style powsybl_core.iidm.network,
+      powsybl_core.loadflow_api,
+      powsybl_core.sensitivity_api,
+      powsybl_core.security_analysis_api,
+      powsybl_core.contingency_api,
+      powsybl_core.commons {
+      color indigo
+    }
+    style powsybl_open_loadflow.open_loadflow_provider,
+      powsybl_open_loadflow.open_sensitivity_provider,
+      powsybl_open_loadflow.open_security_provider,
+      powsybl_open_loadflow.lf_network_adapter,
+      powsybl_open_loadflow.contingency_propagation {
+      color green
+    }
+  }
+}

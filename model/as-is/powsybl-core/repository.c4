@@ -1,3 +1,5 @@
 model {
-  powsybl_core = repository 'powsybl-core' 'IIDM network model, analysis APIs, shared contracts, and provider discovery.'
+  powsybl_core = repository 'powsybl-core' 'IIDM network model, analysis APIs, shared contracts, and provider discovery.' {
+    link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/index.html
+  }
 }

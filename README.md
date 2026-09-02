@@ -13,6 +13,19 @@ This directory contains one LikeC4 project for the repositories checked out besi
 
 The source evidence for the State Estimation baseline, including reviewed branches and commits, is recorded in [architecture-evidence.md](architecture-evidence.md).
 
+## Factual Documentation Links
+
+Every factual element with a public reference carries an external `link` in its
+LikeC4 declaration:
+
+- Named Java classes, interfaces, providers, and APIs link to their published
+	Javadoc pages.
+- Intentional architecture aggregates link to the closest Powsybl ReadTheDocs
+	page that describes the represented capability or concept.
+- Implementation-only bridge, mapper, and ABI details remain unlinked when no
+	specific public Javadoc or ReadTheDocs page exists. This avoids presenting a
+	broad or unrelated page as authoritative documentation.
+
 
 ## Preview Locally
 

@@ -1,50 +1,109 @@
 model {
   extend powsybl_core.iidm {
     injections = module 'Injections' 'Connectable equipment that produces, consumes, or compensates power.' {
-      generator = component 'Generator'
-      load = component 'Load' 'Includes ZIP and exponential load models.'
-      battery = component 'Battery'
-      shunt_compensator = component 'ShuntCompensator' 'Linear or non-linear shunt model.'
-      static_var_compensator = component 'StaticVarCompensator'
-      ground = component 'Ground'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+      generator = component 'Generator' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Generator.html
+      }
+      load = component 'Load' 'Includes ZIP and exponential load models.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Load.html
+      }
+      battery = component 'Battery' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Battery.html
+      }
+      shunt_compensator = component 'ShuntCompensator' 'Linear or non-linear shunt model.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/ShuntCompensator.html
+      }
+      static_var_compensator = component 'StaticVarCompensator' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/StaticVarCompensator.html
+      }
+      ground = component 'Ground' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Ground.html
+      }
     }
 
     branches = module 'AC branches' 'Connectable equipment joining two AC terminals.' {
-      branch = component 'Branch' 'Base branch contract.'
-      ac_line = component 'Line'
-      tie_line = component 'TieLine'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+      branch = component 'Branch' 'Base branch contract.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Branch.html
+      }
+      ac_line = component 'Line' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Line.html
+      }
+      tie_line = component 'TieLine' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/TieLine.html
+      }
     }
 
     transformers = module 'Transformers and tap changers' 'AC transformers and their voltage/phase regulation equipment.' {
-      two_windings_transformer = component 'TwoWindingsTransformer'
-      three_windings_transformer = component 'ThreeWindingsTransformer'
-      ratio_tap_changer = component 'RatioTapChanger'
-      phase_tap_changer = component 'PhaseTapChanger'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+      two_windings_transformer = component 'TwoWindingsTransformer' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/TwoWindingsTransformer.html
+      }
+      three_windings_transformer = component 'ThreeWindingsTransformer' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/ThreeWindingsTransformer.html
+      }
+      ratio_tap_changer = component 'RatioTapChanger' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/RatioTapChanger.html
+      }
+      phase_tap_changer = component 'PhaseTapChanger' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/PhaseTapChanger.html
+      }
     }
 
     hvdc = module 'HVDC equipment' 'HVDC line and AC/DC converter-station model.' {
-      hvdc_line = component 'HvdcLine'
-      vsc_converter_station = component 'VscConverterStation'
-      lcc_converter_station = component 'LccConverterStation'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+      hvdc_line = component 'HvdcLine' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/HvdcLine.html
+      }
+      vsc_converter_station = component 'VscConverterStation' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/VscConverterStation.html
+      }
+      lcc_converter_station = component 'LccConverterStation' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/LccConverterStation.html
+      }
     }
 
     dc_grid = module 'DC grid equipment' 'The explicit DC network topology model.' {
-      dc_bus = component 'DcBus'
-      dc_line = component 'DcLine'
-      dc_switch = component 'DcSwitch'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/additional.html
+      dc_bus = component 'DcBus' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/DcBus.html
+      }
+      dc_line = component 'DcLine' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/DcLine.html
+      }
+      dc_switch = component 'DcSwitch' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/DcSwitch.html
+      }
     }
 
     limits_and_control = module 'Limits and automation' 'Operating limits, reactive limits, and automation systems attached to equipment.' {
-      operational_limits = component 'OperationalLimits and LoadingLimits'
-      reactive_limits = component 'ReactiveLimits'
-      automation_system = component 'AutomationSystem and OverloadManagementSystem'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/additional.html
+      operational_limits = component 'OperationalLimits and LoadingLimits' {
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/additional.html
+      }
+      reactive_limits = component 'ReactiveLimits' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/ReactiveLimits.html
+      }
+      automation_system = component 'AutomationSystem and OverloadManagementSystem' {
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/additional.html
+      }
     }
 
     extensions = module 'IIDM extensions' 'Extension points and common calculated-state extensions.' {
-      extension_contract = component 'Extension and Extendable' 'Extension mechanism available on IIDM objects.'
-      slack_terminal = component 'SlackTerminal'
-      reference_terminals = component 'ReferenceTerminals'
-      cgmes_extensions = component 'CGMES extensions' 'CGMES-specific data carried beside the IIDM model.'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/extensions.html
+      extension_contract = component 'Extension and Extendable' 'Extension mechanism available on IIDM objects.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-commons/latest/com/powsybl/commons/extensions/Extension.html
+      }
+      slack_terminal = component 'SlackTerminal' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-extensions/latest/com/powsybl/iidm/network/extensions/SlackTerminal.html
+      }
+      reference_terminals = component 'ReferenceTerminals' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-extensions/latest/com/powsybl/iidm/network/extensions/ReferenceTerminals.html
+      }
+      cgmes_extensions = component 'CGMES extensions' 'CGMES-specific data carried beside the IIDM model.' {
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/extensions.html
+      }
     }
   }
 

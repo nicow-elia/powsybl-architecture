@@ -1,6 +1,8 @@
 model {
   extend powsybl_open_loadflow {
-    sensitivity_engines = engine 'AC/DC sensitivity engines' 'AcSensitivityAnalysis and DcSensitivityAnalysis.'
+    sensitivity_engines = engine 'AC/DC sensitivity engines' 'AcSensitivityAnalysis and DcSensitivityAnalysis.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/sensitivity/sensitivity.html
+    }
   }
 
   powsybl_open_loadflow.sensitivity_engines -> powsybl_open_loadflow.lf_network_adapter 'loads base-case topology'

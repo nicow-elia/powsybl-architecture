@@ -1,8 +1,14 @@
 model {
   extend powsybl_core.iidm.extensions {
-    measurements = component 'Measurements and discrete measurements extensions' 'Measurement, Measurements, MeasurementAdder, DiscreteMeasurement, and DiscreteMeasurements attach measured values and properties to IIDM equipment.'
-    observability = component 'Observability extensions' 'Observability, BranchObservability, InjectionObservability, ObservabilityArea, and ObservabilityQuality annotate IIDM equipment and topology.'
-    transformer_estimation_flags = component 'Transformer estimation flags' 'TwoWindingsTransformerToBeEstimated and ThreeWindingsTransformerToBeEstimated mark transformer equipment for estimation.'
+    measurements = component 'Measurements and discrete measurements extensions' 'Measurement, Measurements, MeasurementAdder, DiscreteMeasurement, and DiscreteMeasurements attach measured values and properties to IIDM equipment.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/extensions.html
+    }
+    observability = component 'Observability extensions' 'Observability, BranchObservability, InjectionObservability, ObservabilityArea, and ObservabilityQuality annotate IIDM equipment and topology.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/extensions.html
+    }
+    transformer_estimation_flags = component 'Transformer estimation flags' 'TwoWindingsTransformerToBeEstimated and ThreeWindingsTransformerToBeEstimated mark transformer equipment for estimation.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/extensions.html
+    }
   }
 
   powsybl_core.iidm.extensions.measurements -> powsybl_core.iidm.network 'attach measurement data to'

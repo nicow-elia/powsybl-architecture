@@ -1,3 +1,5 @@
 model {
-  pypowsybl = repository 'pypowsybl' 'Python bindings that expose Powsybl Core APIs and IIDM data as Python objects and pandas DataFrames.'
+  pypowsybl = repository 'pypowsybl' 'Python bindings that expose Powsybl Core APIs and IIDM data as Python objects and pandas DataFrames.' {
+    link https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/index.html
+  }
 }

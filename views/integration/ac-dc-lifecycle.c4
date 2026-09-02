@@ -1,0 +1,41 @@
+views {
+  view detailed_ac_dc_grid_lifecycle {
+    title 'Detailed AC/DC Grid: IIDM, Open Load Flow, and Python'
+    description 'Explicit DC equipment is held in the shared IIDM Network, converted to a coupled LfNetwork for the Open Load Flow AC/DC formulation, and written back as IIDM state and Python DataFrames. The pypowsybl ACDC OPF prototype is a separate optimizer over the same Network data, not an Open Load Flow provider.'
+
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.dc_grid
+    include powsybl_core.iidm.dc_grid.*
+    include powsybl_core.iidm.hvdc
+    include powsybl_core.iidm.hvdc.ac_dc_converters
+    include powsybl_core.iidm.io.dc_format_io
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_network_parameter
+    include powsybl_open_loadflow.lf_network_adapter.ac_dc_loader
+    include powsybl_open_loadflow.coupled_ac_dc_lf_network
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_newton_raphson
+    include powsybl_open_loadflow.ac_dc_result_mapping
+    include pypowsybl.dc_dataframes
+    include pypowsybl.ac_dc_opf
+    autoLayout LeftRight
+
+    style powsybl_core.iidm.network,
+      powsybl_core.iidm.dc_grid,
+      powsybl_core.iidm.dc_grid.*,
+      powsybl_core.iidm.hvdc,
+      powsybl_core.iidm.hvdc.ac_dc_converters,
+      powsybl_core.iidm.io.dc_format_io {
+      color indigo
+    }
+    style powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_network_parameter,
+      powsybl_open_loadflow.lf_network_adapter.ac_dc_loader,
+      powsybl_open_loadflow.coupled_ac_dc_lf_network,
+      powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_newton_raphson,
+      powsybl_open_loadflow.ac_dc_result_mapping {
+      color green
+    }
+    style pypowsybl.dc_dataframes,
+      pypowsybl.ac_dc_opf {
+      color sky
+    }
+  }
+}

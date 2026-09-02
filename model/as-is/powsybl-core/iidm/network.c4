@@ -1,18 +1,35 @@
 model {
   extend powsybl_core {
     iidm = module 'IIDM API and extensions' 'The mutable electrical-network object model, its principal interfaces, extensions, and format providers.' {
-      network = model 'Network' 'IIDM Network and working variant passed by reference to every analysis.'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/index.html
+      network = model 'Network' 'IIDM Network and working variant passed by reference to every analysis.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Network.html
+      }
 
       common_types = module 'Common IIDM contracts' 'Base interfaces shared by the network model.' {
-        identifiable = component 'Identifiable' 'Base contract for named IIDM objects.'
-        connectable = component 'Connectable' 'Base contract for equipment that owns terminals.'
-        terminal = component 'Terminal' 'Electrical connection point between equipment and voltage-level topology.'
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/index.html
+        identifiable = component 'Identifiable' 'Base contract for named IIDM objects.' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Identifiable.html
+        }
+        connectable = component 'Connectable' 'Base contract for equipment that owns terminals.' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Connectable.html
+        }
+        terminal = component 'Terminal' 'Electrical connection point between equipment and voltage-level topology.' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Terminal.html
+        }
       }
 
       variants = module 'Network lifecycle' 'Network creation, variants, and mutation notifications.' {
-        network_factory = component 'NetworkFactory' 'Creates an IIDM Network implementation.'
-        variant_manager = component 'VariantManager' 'Selects and manages the working variant.'
-        network_listener = component 'NetworkListener' 'Receives IIDM network changes.'
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/index.html
+        network_factory = component 'NetworkFactory' 'Creates an IIDM Network implementation.' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/NetworkFactory.html
+        }
+        variant_manager = component 'VariantManager' 'Selects and manages the working variant.' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/VariantManager.html
+        }
+        network_listener = component 'NetworkListener' 'Receives IIDM network changes.' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/NetworkListener.html
+        }
       }
     }
   }

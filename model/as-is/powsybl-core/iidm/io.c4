@@ -1,45 +1,111 @@
 model {
   extend powsybl_core.iidm {
     io = module 'IIDM I/O and format providers' 'Network.read and Network.write select registered Importer and Exporter implementations.' {
-      network_read_write = api 'Network.read / Network.write' 'Facade methods on Network.'
-      importer_spi = api 'Importer and Importers' 'SPI for constructing an IIDM Network from a data source.'
-      exporter_spi = api 'Exporter and Exporters' 'SPI for writing an IIDM Network to a data sink.'
-      provider_discovery = component 'Importers/Exporters ServiceLoader' 'Discovers @AutoService provider implementations.'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/index.html
+      network_read_write = api 'Network.read / Network.write' 'Facade methods on Network.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Network.html
+      }
+      importer_spi = api 'Importer and Importers' 'SPI for constructing an IIDM Network from a data source.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Importer.html
+      }
+      exporter_spi = api 'Exporter and Exporters' 'SPI for writing an IIDM Network to a data sink.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Exporter.html
+      }
+      provider_discovery = component 'Importers/Exporters ServiceLoader' 'Discovers @AutoService provider implementations.' {
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/going_further/datasources.html
+      }
 
       exchange_formats = module 'Supported exchange formats' {
-        cgmes = format 'CGMES'
-        ucte = format 'UCTE'
-        matpower = format 'MATPOWER'
-        psse = format 'PSS/E'
-        ieee_cdf = format 'IEEE CDF'
-        powerfactory = format 'PowerFactory'
-        xiidm = format 'XIIDM XML'
-        jiidm = format 'JIIDM JSON'
-        biidm = format 'BIIDM binary'
-        ampl = format 'AMPL'
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/index.html
+        cgmes = format 'CGMES' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/index.html
+        }
+        ucte = format 'UCTE' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/ucte/index.html
+        }
+        matpower = format 'MATPOWER' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/matpower/index.html
+        }
+        psse = format 'PSS/E' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/psse/index.html
+        }
+        ieee_cdf = format 'IEEE CDF' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/ieee/ieee.html
+        }
+        powerfactory = format 'PowerFactory' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/powerfactory/index.html
+        }
+        xiidm = format 'XIIDM XML' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/iidm/index.html
+        }
+        jiidm = format 'JIIDM JSON' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/iidm/index.html
+        }
+        biidm = format 'BIIDM binary' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/iidm/index.html
+        }
+        ampl = format 'AMPL' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/ampl/index.html
+        }
       }
 
       import_providers = module 'Importer implementations' {
-        cgmes_importer = adapter 'CgmesImport'
-        ucte_importer = adapter 'UcteImporter'
-        matpower_importer = adapter 'MatpowerImporter'
-        psse_importer = adapter 'PsseImporter'
-        ieee_cdf_importer = adapter 'IeeeCdfImporter'
-        powerfactory_importer = adapter 'PowerFactoryImporter'
-        xiidm_importer = adapter 'XMLImporter'
-        jiidm_importer = adapter 'JsonImporter'
-        biidm_importer = adapter 'BinaryImporter'
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/index.html
+        cgmes_importer = adapter 'CgmesImport' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-cgmes-conversion/latest/com.powsybl.cgmes.conversion/com/powsybl/cgmes/conversion/CgmesImport.html
+        }
+        ucte_importer = adapter 'UcteImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-ucte-converter/latest/com/powsybl/ucte/converter/UcteImporter.html
+        }
+        matpower_importer = adapter 'MatpowerImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-matpower-converter/latest/com/powsybl/matpower/converter/MatpowerImporter.html
+        }
+        psse_importer = adapter 'PsseImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-psse-converter/latest/com/powsybl/psse/converter/PsseImporter.html
+        }
+        ieee_cdf_importer = adapter 'IeeeCdfImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-ieee-cdf-converter/latest/com/powsybl/ieeecdf/converter/IeeeCdfImporter.html
+        }
+        powerfactory_importer = adapter 'PowerFactoryImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-powerfactory-converter/latest/com/powsybl/powerfactory/converter/PowerFactoryImporter.html
+        }
+        xiidm_importer = adapter 'XMLImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-serde/latest/com/powsybl/iidm/serde/XMLImporter.html
+        }
+        jiidm_importer = adapter 'JsonImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-serde/latest/com/powsybl/iidm/serde/JsonImporter.html
+        }
+        biidm_importer = adapter 'BinaryImporter' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-serde/latest/com/powsybl/iidm/serde/BinaryImporter.html
+        }
       }
 
       export_providers = module 'Exporter implementations' {
-        cgmes_exporter = adapter 'CgmesExport'
-        ucte_exporter = adapter 'UcteExport'
-        matpower_exporter = adapter 'MatpowerExport'
-        psse_exporter = adapter 'PsseExport'
-        xiidm_exporter = adapter 'XMLExport'
-        jiidm_exporter = adapter 'JsonExport'
-        biidm_exporter = adapter 'BinaryExport'
-        ampl_exporter = adapter 'AmplExport'
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/index.html
+        cgmes_exporter = adapter 'CgmesExport' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-cgmes-conversion/latest/com.powsybl.cgmes.conversion/com/powsybl/cgmes/conversion/CgmesExport.html
+        }
+        ucte_exporter = adapter 'UCTE export adapter' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/ucte/export.html
+        }
+        matpower_exporter = adapter 'MATPOWER export adapter' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/matpower/export.html
+        }
+        psse_exporter = adapter 'PSS/E export adapter' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/psse/export.html
+        }
+        xiidm_exporter = adapter 'XIIDM XML export adapter' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/iidm/export.html
+        }
+        jiidm_exporter = adapter 'JIIDM JSON export adapter' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/iidm/export.html
+        }
+        biidm_exporter = adapter 'BIIDM binary export adapter' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/iidm/export.html
+        }
+        ampl_exporter = adapter 'AMPL export adapter' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/ampl/export.html
+        }
       }
     }
   }

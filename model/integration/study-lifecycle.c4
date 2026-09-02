@@ -1,73 +1,37 @@
 model {
-  study_configuration_sources = component 'Configuration sources' 'Application code, JSON configuration, and PlatformConfig defaults.' {
-    link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/user/configuration/index.html
-  }
+  study_configuration_sources = component 'Configuration sources' 'Application code, JSON configuration, and PlatformConfig defaults.'
 
   extend powsybl_core {
     study_contracts = module 'Study contracts' {
-      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      common_study_parameters = component 'Core study parameters' 'LoadFlowParameters, SecurityAnalysisParameters, and SensitivityAnalysisParameters.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/loadflow/index.html
-      }
-      contingencies_and_contexts = component 'Contingencies and contexts' 'Contingency lists, N/N-1 contexts, and affected equipment.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
-      action_definitions = component 'Action definitions' 'Switch, terminal connection, generator, load, HVDC, and tap-changer actions.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
-      operator_strategies = component 'Operator strategies and conditions' 'Conditional actions selected for a contingency context.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
-      state_monitors = component 'StateMonitor definitions' 'Select branches, buses, and three-winding transformers recorded for each context.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
-      selected_loading_limits = component 'Selected LoadingLimits' 'Active IIDM limit groups and their associated thresholds.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/additional.html
-      }
-      modified_result_parameters = component 'Modified monitored-elements parameters' 'Power and voltage deltas that suppress unchanged N-1 monitored results.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
+    common_study_parameters = component 'Core study parameters' 'LoadFlowParameters, SecurityAnalysisParameters, and SensitivityAnalysisParameters.'
+    contingencies_and_contexts = component 'Contingencies and contexts' 'Contingency lists, N/N-1 contexts, and affected equipment.'
+    action_definitions = component 'Action definitions' 'Switch, terminal connection, generator, load, HVDC, and tap-changer actions.'
+    operator_strategies = component 'Operator strategies and conditions' 'Conditional actions selected for a contingency context.'
+    state_monitors = component 'StateMonitor definitions' 'Select branches, buses, and three-winding transformers recorded for each context.'
+    selected_loading_limits = component 'Selected LoadingLimits' 'Active IIDM limit groups and their associated thresholds.'
+    modified_result_parameters = component 'Modified monitored-elements parameters' 'Power and voltage deltas that suppress unchanged N-1 monitored results.'
     }
   }
 
   extend powsybl_open_loadflow {
     study_execution = module 'Study execution' {
-      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/security/index.html
-      provider_parameter_extensions = component 'OLF provider parameter extensions' 'Open Load Flow, security-analysis, and sensitivity-analysis extensions.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/parameters.html
-      }
-      lf_actions_and_strategies = adapter 'LfAction and LfOperatorStrategy' 'Validates and translates Core actions and conditional strategies against LfNetwork.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/security/inputs.html
-      }
-      pre_contingency_state = component 'Pre-contingency N state' 'Base calculation, limit evaluation, and monitored result baseline.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
-      post_contingency_state = component 'Post-contingency N-1 state' 'Calculation after the propagated outage.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
-      post_action_state = component 'Post-action state' 'Calculation after a selected operator strategy applies curative actions.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
-      limit_violation_evaluator = component 'Limit violation evaluation' 'Evaluates active loading limits and reductions for each calculated state.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-      }
+      provider_parameter_extensions = component 'OLF provider parameter extensions' 'Open Load Flow, security-analysis, and sensitivity-analysis extensions.'
+      lf_actions_and_strategies = adapter 'LfAction and LfOperatorStrategy' 'Validates and translates Core actions and conditional strategies against LfNetwork.'
+      pre_contingency_state = component 'Pre-contingency N state' 'Base calculation, limit evaluation, and monitored result baseline.'
+      post_contingency_state = component 'Post-contingency N-1 state' 'Calculation after the propagated outage.'
+      post_action_state = component 'Post-action state' 'Calculation after a selected operator strategy applies curative actions.'
+      limit_violation_evaluator = component 'Limit violation evaluation' 'Evaluates active loading limits and reductions for each calculated state.'
       monitored_result_filter = component 'Monitored-result delta filter' 'Omits unchanged monitored branch, bus, and transformer results from N-1 output.'
     }
   }
 
   extend powsybl_open_loadflow.state_and_result_mapping {
-    study_result_mapping = adapter 'Core study result mapping' 'Builds security results and supported sensitivity-context results.' {
-      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
-    }
+    study_result_mapping = adapter 'Core study result mapping' 'Builds security results and supported sensitivity-context results.'
   }
 
   extend pypowsybl {
-    python_study_parameters = api 'Python study parameter facades' 'Python load-flow, security-analysis, and sensitivity-analysis parameters.' {
-      link https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/reference/loadflow.html
-    }
-    pandas_study_results = adapter 'pandas study result adapters' 'DataFrames for monitored state, violations, factors, and statuses.' {
-      link https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/reference/security.html
-    }
+    python_study_parameters = api 'Python study parameter facades' 'Python load-flow, security-analysis, and sensitivity-analysis parameters.'
+    pandas_study_results = adapter 'pandas study result adapters' 'DataFrames for monitored state, violations, factors, and statuses.'
   }
 
   extend pypowsybl.native_image_bridge {

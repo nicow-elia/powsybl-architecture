@@ -1,36 +1,62 @@
 model {
   extend powsybl_core.iidm.dc_grid {
-    dc_node = component 'DcNode'
-    dc_ground = component 'DcGround'
-    dc_terminal = component 'DcTerminal'
-    dc_connectivity = component 'DC connectivity and mutations' 'DC connection state and topology changes are held on the shared Network.'
+    dc_node = component 'DcNode' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/DcNode.html
+    }
+    dc_ground = component 'DcGround' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/DcGround.html
+    }
+    dc_terminal = component 'DcTerminal' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/DcTerminal.html
+    }
+    dc_connectivity = component 'DC connectivity and mutations' 'DC connection state and topology changes are held on the shared Network.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+    }
   }
 
   extend powsybl_core.iidm.hvdc {
-    ac_dc_converters = component 'IIDM AC/DC converters' 'LCC and VSC converters couple AC terminals to DC terminals, with control modes, losses, and active-power bounds.'
+    ac_dc_converters = component 'IIDM AC/DC converters' 'LCC and VSC converters couple AC terminals to DC terminals, with control modes, losses, and active-power bounds.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+    }
   }
 
   extend powsybl_core.iidm.io {
-    dc_format_io = adapter 'DC-capable format I/O' 'CGMES and IIDM format providers construct and serialize detailed DC equipment where supported.'
+    dc_format_io = adapter 'DC-capable format I/O' 'CGMES and IIDM format providers construct and serialize detailed DC equipment where supported.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/index.html
+    }
   }
 
   extend powsybl_open_loadflow.ac_dc_loadflow_engines {
-    ac_dc_network_parameter = component 'acDcNetwork parameter' 'Selects the detailed AC/DC load-flow formulation.'
-    ac_dc_newton_raphson = engine 'AC/DC Newton-Raphson execution' 'Solves the coupled AC/DC equation system. Classic DC load flow and alternate AC solvers are not used in this mode.'
+    ac_dc_network_parameter = component 'acDcNetwork parameter' 'Selects the detailed AC/DC load-flow formulation.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/parameters.html
+    }
+    ac_dc_newton_raphson = engine 'AC/DC Newton-Raphson execution' 'Solves the coupled AC/DC equation system. Classic DC load flow and alternate AC solvers are not used in this mode.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/loadflow.html
+    }
   }
 
   extend powsybl_open_loadflow.lf_network_adapter {
-    ac_dc_loader = adapter 'IIDM to coupled LfNetwork loader' 'Builds AC buses, DC buses, DC branches, and converter representations.'
+    ac_dc_loader = adapter 'IIDM to coupled LfNetwork loader' 'Builds AC buses, DC buses, DC branches, and converter representations.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/loadflow.html
+    }
   }
 
   extend powsybl_open_loadflow {
-    coupled_ac_dc_lf_network = model 'Coupled LfNetwork' 'Solver-facing AC and DC state, including synchronous components and converter couplings.'
-    ac_dc_result_mapping = adapter 'IIDM state and Core result mapping' 'Writes converged electrical state back to IIDM and creates LoadFlow results.'
+    coupled_ac_dc_lf_network = model 'Coupled LfNetwork' 'Solver-facing AC and DC state, including synchronous components and converter couplings.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/loadflow.html
+    }
+    ac_dc_result_mapping = adapter 'IIDM state and Core result mapping' 'Writes converged electrical state back to IIDM and creates LoadFlow results.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/loadflow/index.html
+    }
   }
 
   extend pypowsybl {
-    dc_dataframes = api 'Network DC DataFrames and mutation APIs' 'Exposes DC equipment, converter attributes, connection state, and solved values through pandas DataFrames.'
-    ac_dc_opf = engine 'AC/DC OPF prototype' 'A separate Python optimization model that adds DC voltages, currents, converter constraints, and an AC/DC objective.'
+    dc_dataframes = api 'Network DC DataFrames and mutation APIs' 'Exposes DC equipment, converter attributes, connection state, and solved values through pandas DataFrames.' {
+      link https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/reference/network.html
+    }
+    ac_dc_opf = engine 'AC/DC OPF prototype' 'A separate Python optimization model that adds DC voltages, currents, converter constraints, and an AC/DC objective.' {
+      link https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/user_guide/opf.html
+    }
   }
 
   powsybl_core.iidm.io.dc_format_io -> powsybl_core.iidm.dc_grid 'constructs and serializes'

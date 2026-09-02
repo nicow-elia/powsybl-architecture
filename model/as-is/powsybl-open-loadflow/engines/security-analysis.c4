@@ -1,6 +1,8 @@
 model {
   extend powsybl_open_loadflow {
-    security_analysis_engines = engine 'Security analysis engines' 'AcSecurityAnalysis, DcSecurityAnalysis, and WoodburyDcSecurityAnalysis.'
+    security_analysis_engines = engine 'Security analysis engines' 'AcSecurityAnalysis, DcSecurityAnalysis, and WoodburyDcSecurityAnalysis.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/security/security.html
+    }
   }
 
   powsybl_open_loadflow.security_analysis_engines -> powsybl_open_loadflow.contingency_propagation 'converts and applies outages'

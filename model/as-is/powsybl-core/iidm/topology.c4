@@ -1,13 +1,28 @@
 model {
   extend powsybl_core.iidm {
     topology = module 'Topology and containment' 'The AC network hierarchy and its bus/breaker or node/breaker topology.' {
-      substation = component 'Substation' 'Contains voltage levels and their equipment.'
-      voltage_level = component 'VoltageLevel' 'Owns bus/breaker and node/breaker topology.'
-      bus = component 'Bus' 'Electrical node in the bus topology.'
-      busbar_section = component 'BusbarSection' 'Physical busbar element in node/breaker topology.'
-      switch = component 'Switch' 'Coupler, disconnector, or breaker that changes topology.'
-      topology_views = component 'VoltageLevel topology views' 'Bus, bus/breaker, and node/breaker views expose the resolved topology.'
-      area = component 'Area and AreaBoundary' 'Groups equipment for operational and geographical purposes.'
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+      substation = component 'Substation' 'Contains voltage levels and their equipment.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Substation.html
+      }
+      voltage_level = component 'VoltageLevel' 'Owns bus/breaker and node/breaker topology.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/VoltageLevel.html
+      }
+      bus = component 'Bus' 'Electrical node in the bus topology.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Bus.html
+      }
+      busbar_section = component 'BusbarSection' 'Physical busbar element in node/breaker topology.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/BusbarSection.html
+      }
+      switch = component 'Switch' 'Coupler, disconnector, or breaker that changes topology.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/Switch.html
+      }
+      topology_views = component 'VoltageLevel topology views' 'Bus, bus/breaker, and node/breaker views expose the resolved topology.' {
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/index.html
+      }
+      area = component 'Area and AreaBoundary' 'Groups equipment for operational and geographical purposes.' {
+        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/network_subnetwork.html
+      }
     }
   }
 

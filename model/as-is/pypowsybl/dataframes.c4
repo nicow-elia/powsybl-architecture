@@ -1,6 +1,8 @@
 model {
   extend pypowsybl {
-    dataframe_views = adapter 'pandas DataFrame adapters' 'Convert pandas DataFrames to native dataframes and SeriesArray results back to pandas.'
+    dataframe_views = adapter 'pandas DataFrame adapters' 'Convert pandas DataFrames to native dataframes and SeriesArray results back to pandas.' {
+      link https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/reference/network.html
+    }
     dataframe_mappers = adapter 'Java DataFrame mappers' 'NetworkDataframes, DataframeMapper, adders, and modification mappers over IIDM.'
   }
 

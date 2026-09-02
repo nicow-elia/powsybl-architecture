@@ -1,3 +1,5 @@
 model {
-  powsybl_open_loadflow = repository 'powsybl-open-loadflow' 'Provider implementations and numerical engines for Powsybl steady-state analyses.'
+  powsybl_open_loadflow = repository 'powsybl-open-loadflow' 'Provider implementations and numerical engines for Powsybl steady-state analyses.' {
+    link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/index.html
+  }
 }

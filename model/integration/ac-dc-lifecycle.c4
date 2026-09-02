@@ -1,0 +1,50 @@
+model {
+  extend powsybl_core.iidm.dc_grid {
+    dc_node = component 'DcNode'
+    dc_ground = component 'DcGround'
+    dc_terminal = component 'DcTerminal'
+    dc_connectivity = component 'DC connectivity and mutations' 'DC connection state and topology changes are held on the shared Network.'
+  }
+
+  extend powsybl_core.iidm.hvdc {
+    ac_dc_converters = component 'IIDM AC/DC converters' 'LCC and VSC converters couple AC terminals to DC terminals, with control modes, losses, and active-power bounds.'
+  }
+
+  extend powsybl_core.iidm.io {
+    dc_format_io = adapter 'DC-capable format I/O' 'CGMES and IIDM format providers construct and serialize detailed DC equipment where supported.'
+  }
+
+  extend powsybl_open_loadflow.ac_dc_loadflow_engines {
+    ac_dc_network_parameter = component 'acDcNetwork parameter' 'Selects the detailed AC/DC load-flow formulation.'
+    ac_dc_newton_raphson = engine 'AC/DC Newton-Raphson execution' 'Solves the coupled AC/DC equation system. Classic DC load flow and alternate AC solvers are not used in this mode.'
+  }
+
+  extend powsybl_open_loadflow.lf_network_adapter {
+    ac_dc_loader = adapter 'IIDM to coupled LfNetwork loader' 'Builds AC buses, DC buses, DC branches, and converter representations.'
+  }
+
+  extend powsybl_open_loadflow {
+    coupled_ac_dc_lf_network = model 'Coupled LfNetwork' 'Solver-facing AC and DC state, including synchronous components and converter couplings.'
+    ac_dc_result_mapping = adapter 'IIDM state and Core result mapping' 'Writes converged electrical state back to IIDM and creates LoadFlow results.'
+  }
+
+  extend pypowsybl {
+    dc_dataframes = api 'Network DC DataFrames and mutation APIs' 'Exposes DC equipment, converter attributes, connection state, and solved values through pandas DataFrames.'
+    ac_dc_opf = engine 'AC/DC OPF prototype' 'A separate Python optimization model that adds DC voltages, currents, converter constraints, and an AC/DC objective.'
+  }
+
+  powsybl_core.iidm.io.dc_format_io -> powsybl_core.iidm.dc_grid 'constructs and serializes'
+  powsybl_core.iidm.dc_grid.dc_terminal -> powsybl_core.iidm.hvdc.ac_dc_converters 'connects DC topology through'
+  powsybl_core.iidm.dc_grid.dc_connectivity -> powsybl_core.iidm.network 'changes the active topology of'
+  powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_network_parameter -> powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_newton_raphson 'selects'
+  powsybl_open_loadflow.lf_network_adapter.ac_dc_loader -> powsybl_open_loadflow.coupled_ac_dc_lf_network 'builds'
+  powsybl_open_loadflow.coupled_ac_dc_lf_network -> powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_newton_raphson 'supplies coupled equations to'
+  powsybl_open_loadflow.ac_dc_loadflow_engines.ac_dc_newton_raphson -> powsybl_open_loadflow.ac_dc_result_mapping 'produces converged state for'
+  pypowsybl.ac_dc_opf -> pypowsybl.dc_dataframes 'reads inputs and writes solved values through'
+
+  powsybl_core.iidm.dc_grid -> powsybl_open_loadflow.lf_network_adapter.ac_dc_loader 'maps the explicit DC topology into'
+  powsybl_core.iidm.hvdc.ac_dc_converters -> powsybl_open_loadflow.lf_network_adapter.ac_dc_loader 'maps converter controls and limits into'
+  powsybl_open_loadflow.ac_dc_result_mapping -> powsybl_core.iidm.network 'updates the shared Network'
+  pypowsybl.dc_dataframes -> powsybl_core.iidm.network 'reads and mutates through the native bridge'
+  pypowsybl.ac_dc_opf -> powsybl_core.iidm.network 'optimizes a separate model over'
+}

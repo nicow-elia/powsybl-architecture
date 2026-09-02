@@ -1,11 +1,23 @@
 model {
   extend powsybl_core {
-    loadflow_api = api 'Load Flow API' 'LoadFlow.Runner and the LoadFlowProvider SPI.'
-    sensitivity_api = api 'Sensitivity Analysis API' 'SensitivityAnalysis.Runner and the SensitivityAnalysisProvider SPI.'
-    security_analysis_api = api 'Security Analysis API' 'SecurityAnalysis.Runner and the SecurityAnalysisProvider SPI.'
-    contingency_api = api 'Contingency API' 'Contingency, ContingenciesProvider, and contingency elements.'
-    commons = library 'Commons services' 'ServiceLoader, ComputationManager, PlatformConfig, ReportNode, and Extension contracts.'
-    math = library 'Math API' 'MatrixFactory and shared numerical abstractions.'
+    loadflow_api = api 'Load Flow API' 'LoadFlow.Runner and the LoadFlowProvider SPI.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-loadflow-api/latest/com.powsybl.loadflow.api/com/powsybl/loadflow/LoadFlow.html
+    }
+    sensitivity_api = api 'Sensitivity Analysis API' 'SensitivityAnalysis.Runner and the SensitivityAnalysisProvider SPI.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-sensitivity-analysis-api/latest/com.powsybl.sensitivity.analysis.api/com/powsybl/sensitivity/SensitivityAnalysis.html
+    }
+    security_analysis_api = api 'Security Analysis API' 'SecurityAnalysis.Runner and the SecurityAnalysisProvider SPI.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-security-analysis-api/latest/com.powsybl.security.analysis.api/com/powsybl/security/SecurityAnalysis.html
+    }
+    contingency_api = api 'Contingency API' 'Contingency, ContingenciesProvider, and contingency elements.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-contingency-api/latest/com.powsybl.contingency.api/com/powsybl/contingency/Contingency.html
+    }
+    commons = library 'Commons services' 'ServiceLoader, ComputationManager, PlatformConfig, ReportNode, and Extension contracts.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/user/configuration/modules.html
+    }
+    math = library 'Math API' 'MatrixFactory and shared numerical abstractions.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-math/latest/com/powsybl/math/matrix/MatrixFactory.html
+    }
   }
 
   powsybl_core.loadflow_api -> powsybl_core.iidm.network 'accepts Network and working variant'
