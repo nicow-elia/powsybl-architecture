@@ -1,0 +1,9 @@
+model {
+  extend powsybl_open_loadflow {
+    sensitivity_engines = engine 'AC/DC sensitivity engines' 'AcSensitivityAnalysis and DcSensitivityAnalysis.'
+  }
+
+  powsybl_open_loadflow.sensitivity_engines -> powsybl_open_loadflow.lf_network_adapter 'loads base-case topology'
+  powsybl_open_loadflow.sensitivity_engines -> powsybl_open_loadflow.lf_network 'computes derivatives on'
+  powsybl_open_loadflow.sensitivity_engines -> powsybl_open_loadflow.equation_toolkit 'reuses factorized Jacobians from'
+}

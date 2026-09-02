@@ -1,0 +1,11 @@
+views {
+  view open_loadflow_components of powsybl_open_loadflow {
+    title 'powsybl-open-loadflow Components'
+    include *
+    exclude powsybl_core
+    exclude pypowsybl
+    exclude pypowsybl_capability_bundle
+    exclude pypowsybl_bundled_services
+    exclude study_configuration_sources
+  }
+}

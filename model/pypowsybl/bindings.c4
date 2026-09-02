@@ -1,0 +1,18 @@
+model {
+  extend pypowsybl {
+    python_api = api 'Python domain APIs' 'network, loadflow, security, sensitivity, and other Python facades.'
+    python_network = component 'Python Network wrapper' 'Network._handle retains the opaque Java object handle across native calls.'
+    pybind_extension = binding '_pypowsybl pybind11 extension' 'The C++ extension module used by the Python API.'
+    native_image_bridge = binding 'GraalVM native-image bridge' 'PowsyblCaller and GraalVmGuard cross the native-image isolate boundary.'
+    java_bindings = module 'Java C entry points' 'GraalVM @CEntryPoint functions that hold Java object handles and call public Powsybl APIs.' {
+      network_c_functions = binding 'NetworkCFunctions'
+      analysis_c_functions = binding 'LoadFlowCFunctions, SecurityAnalysisCFunctions, SensitivityAnalysisCFunctions'
+    }
+  }
+
+  pypowsybl.python_api -> pypowsybl.python_network 'creates and passes Network handles'
+  pypowsybl.python_api -> pypowsybl.pybind_extension 'calls the extension module'
+  pypowsybl.python_network -> pypowsybl.pybind_extension 'passes its opaque handle to'
+  pypowsybl.pybind_extension -> pypowsybl.native_image_bridge 'calls native-image entry points through'
+  pypowsybl.native_image_bridge -> pypowsybl.java_bindings 'forwards calls across the isolate to'
+}

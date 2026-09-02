@@ -1,0 +1,3 @@
+model {
+  powsybl_core = repository 'powsybl-core' 'IIDM network model, analysis APIs, shared contracts, and provider discovery.'
+}

@@ -1,0 +1,9 @@
+model {
+  extend powsybl_open_loadflow {
+    security_analysis_engines = engine 'Security analysis engines' 'AcSecurityAnalysis, DcSecurityAnalysis, and WoodburyDcSecurityAnalysis.'
+  }
+
+  powsybl_open_loadflow.security_analysis_engines -> powsybl_open_loadflow.contingency_propagation 'converts and applies outages'
+  powsybl_open_loadflow.security_analysis_engines -> powsybl_open_loadflow.lf_network_adapter 'creates topology-specific networks'
+  powsybl_open_loadflow.security_analysis_engines -> powsybl_open_loadflow.state_and_result_mapping 'maps security results'
+}

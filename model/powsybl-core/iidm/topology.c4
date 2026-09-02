@@ -1,0 +1,19 @@
+model {
+  extend powsybl_core.iidm {
+    topology = module 'Topology and containment' 'The AC network hierarchy and its bus/breaker or node/breaker topology.' {
+      substation = component 'Substation' 'Contains voltage levels and their equipment.'
+      voltage_level = component 'VoltageLevel' 'Owns bus/breaker and node/breaker topology.'
+      bus = component 'Bus' 'Electrical node in the bus topology.'
+      busbar_section = component 'BusbarSection' 'Physical busbar element in node/breaker topology.'
+      switch = component 'Switch' 'Coupler, disconnector, or breaker that changes topology.'
+      topology_views = component 'VoltageLevel topology views' 'Bus, bus/breaker, and node/breaker views expose the resolved topology.'
+      area = component 'Area and AreaBoundary' 'Groups equipment for operational and geographical purposes.'
+    }
+  }
+
+  powsybl_core.iidm.topology.substation -> powsybl_core.iidm.topology.voltage_level 'contains'
+  powsybl_core.iidm.topology.voltage_level -> powsybl_core.iidm.topology.bus 'contains bus topology'
+  powsybl_core.iidm.topology.voltage_level -> powsybl_core.iidm.topology.busbar_section 'contains node/breaker equipment'
+  powsybl_core.iidm.topology.voltage_level -> powsybl_core.iidm.topology.switch 'contains switching equipment'
+  powsybl_core.iidm.topology.voltage_level -> powsybl_core.iidm.topology.topology_views 'exposes through'
+}

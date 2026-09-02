@@ -1,6 +1,6 @@
 # Powsybl Architecture
 
-This directory is a LikeC4 workspace for the repositories checked out beside it.
+This directory contains one LikeC4 project for the repositories checked out beside it. Canonical model elements live in `model/`; diagram projections live in `views/`.
 
 `https://nicow-elia.github.io/powsybl-architecture/`
 

@@ -1,0 +1,13 @@
+specification {
+  element repository
+  element module
+  element api
+  element provider
+  element engine
+  element adapter
+  element model
+  element component
+  element binding
+  element library
+  element format
+}

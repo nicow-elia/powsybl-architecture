@@ -1,0 +1,50 @@
+views {
+  view loadflow_interaction {
+    title 'Load Flow: powsybl-core to Open Load Flow'
+    description 'The Core LoadFlow.Runner discovers the Open Load Flow provider. The shared IIDM Network is adapted to LfNetwork, solved by an AC or DC engine, then updated and returned through Core contracts.'
+    include powsybl_core.loadflow_api
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.variants
+    include powsybl_core.iidm.extensions
+    include powsybl_core.commons
+    include powsybl_core.math
+    include powsybl_open_loadflow.open_loadflow_provider
+    include powsybl_open_loadflow.ac_dc_loadflow_engines
+    include powsybl_open_loadflow.lf_network_adapter
+    include powsybl_open_loadflow.lf_network
+    include powsybl_open_loadflow.state_and_result_mapping
+    include powsybl_open_loadflow.network_cache
+  }
+
+  view sensitivity_interaction {
+    title 'Sensitivity Analysis: powsybl-core to Open Load Flow'
+    description 'The Core SensitivityAnalysis.Runner invokes the OLF provider with an IIDM Network, factor stream, contingency/action inputs, and result writer. OLF calculates AC or DC sensitivities over its LfNetwork representation.'
+    include powsybl_core.sensitivity_api
+    include powsybl_core.contingency_api
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.variants
+    include powsybl_core.commons
+    include powsybl_open_loadflow.open_sensitivity_provider
+    include powsybl_open_loadflow.open_loadflow_provider
+    include powsybl_open_loadflow.sensitivity_engines
+    include powsybl_open_loadflow.lf_network_adapter
+    include powsybl_open_loadflow.lf_network
+  }
+
+  view contingency_analysis_interaction {
+    title 'Contingency Analysis: powsybl-core to Open Load Flow'
+    description 'Core SecurityAnalysis.Runner supplies the IIDM Network and Core contingencies. OLF propagates outages into LfContingency operations, builds topology-specific LfNetworks, runs AC/DC simulations, and maps results back to Core contracts.'
+    include powsybl_core.security_analysis_api
+    include powsybl_core.loadflow_api
+    include powsybl_core.contingency_api
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.topology
+    include powsybl_core.commons
+    include powsybl_open_loadflow.open_security_provider
+    include powsybl_open_loadflow.security_analysis_engines
+    include powsybl_open_loadflow.contingency_propagation
+    include powsybl_open_loadflow.lf_network_adapter
+    include powsybl_open_loadflow.lf_network
+    include powsybl_open_loadflow.state_and_result_mapping
+  }
+}

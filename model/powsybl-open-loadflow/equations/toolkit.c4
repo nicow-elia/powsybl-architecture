@@ -1,0 +1,9 @@
+model {
+  extend powsybl_open_loadflow {
+    equation_toolkit = module 'Equation builder toolkits' 'Equation-system infrastructure and AC/DC builders used by the numerical engines.' {
+      equation_system = model 'EquationSystem and Jacobian infrastructure' 'EquationSystem, EquationTerm, EquationArray, VariableSet, TargetVector, StateVector, JacobianMatrix, and JacobianMatrixFastDecoupled.'
+      ac_equation_builder = component 'AC equation builders' 'AcEquationSystemCreator and AcEquationSystemUpdater.'
+      dc_equation_builder = component 'DC equation builders' 'DcEquationSystemCreator and DcEquationSystemUpdater.'
+    }
+  }
+}

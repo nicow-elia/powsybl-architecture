@@ -1,0 +1,18 @@
+views {
+  view capability_and_provider_bundle {
+    title 'pypowsybl: Capability and Provider Bundle'
+    description 'The wheel packages more than the binding mechanism shown in the main pypowsybl view: Python capability families route through the existing native-image bridge into bundled Core, Open Load Flow, and other service families. This is a capability map, not a promise that every provider is installed or configured for every platform.'
+
+    include pypowsybl_capability_bundle.*
+    include pypowsybl_bundled_services.*
+    include pypowsybl.native_image_bridge
+    autoLayout TopBottom
+
+    style pypowsybl_capability_bundle.*, pypowsybl.native_image_bridge {
+      color sky
+    }
+    style pypowsybl_bundled_services.* {
+      color green
+    }
+  }
+}

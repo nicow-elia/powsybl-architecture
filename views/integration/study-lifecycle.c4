@@ -1,0 +1,72 @@
+views {
+  view contingency_and_corrective_action_flow {
+    title 'Contingency and Corrective-Action State Flow'
+    description 'Core supplies contingencies, actions, operator strategies, and state monitors. Open Load Flow creates N, N-1, and post-action states, evaluates limits, then maps the selected results back to Core. The contract supports post-strategy sensitivity contexts; provider and load-flow-model support can differ by analysis mode.'
+
+    include powsybl_core.security_analysis_api
+    include powsybl_core.study_contracts.contingencies_and_contexts
+    include powsybl_core.study_contracts.action_definitions
+    include powsybl_core.study_contracts.operator_strategies
+    include powsybl_core.study_contracts.state_monitors
+    include powsybl_core.study_contracts.selected_loading_limits
+    include powsybl_open_loadflow.contingency_propagation
+    include powsybl_open_loadflow.study_execution.lf_actions_and_strategies
+    include powsybl_open_loadflow.study_execution.pre_contingency_state
+    include powsybl_open_loadflow.study_execution.post_contingency_state
+    include powsybl_open_loadflow.study_execution.post_action_state
+    include powsybl_open_loadflow.study_execution.limit_violation_evaluator
+    include powsybl_open_loadflow.state_and_result_mapping.study_result_mapping
+    autoLayout LeftRight
+
+    style powsybl_core.security_analysis_api,
+      powsybl_core.study_contracts.* {
+      color indigo
+    }
+    style powsybl_open_loadflow.contingency_propagation,
+      powsybl_open_loadflow.study_execution.*,
+      powsybl_open_loadflow.state_and_result_mapping.study_result_mapping {
+      color green
+    }
+  }
+
+  view analysis_configuration_and_result_selection {
+    title 'Analysis Configuration and Result Selection'
+    description 'Configuration originates in application code, JSON, and PlatformConfig; pypowsybl marshals Python parameters through its native bridge. Core combines common parameters, selected loading limits, and state-monitor filters with OLF provider extensions. OLF maps only relevant monitored N-1 deltas and violations back into Core and pandas results.'
+
+    include study_configuration_sources
+    include pypowsybl.python_study_parameters
+    include pypowsybl.native_image_bridge.native_parameter_abi
+    include pypowsybl.pandas_study_results
+    include powsybl_core.security_analysis_api
+    include powsybl_core.sensitivity_api
+    include powsybl_core.study_contracts.common_study_parameters
+    include powsybl_core.study_contracts.state_monitors
+    include powsybl_core.study_contracts.selected_loading_limits
+    include powsybl_core.study_contracts.modified_result_parameters
+    include powsybl_open_loadflow.study_execution.provider_parameter_extensions
+    include powsybl_open_loadflow.study_execution.pre_contingency_state
+    include powsybl_open_loadflow.study_execution.post_contingency_state
+    include powsybl_open_loadflow.study_execution.limit_violation_evaluator
+    include powsybl_open_loadflow.study_execution.monitored_result_filter
+    include powsybl_open_loadflow.state_and_result_mapping.study_result_mapping
+    autoLayout LeftRight
+
+    style study_configuration_sources {
+      color gray
+    }
+    style pypowsybl.python_study_parameters,
+      pypowsybl.native_image_bridge.native_parameter_abi,
+      pypowsybl.pandas_study_results {
+      color sky
+    }
+    style powsybl_core.security_analysis_api,
+      powsybl_core.sensitivity_api,
+      powsybl_core.study_contracts.* {
+      color indigo
+    }
+    style powsybl_open_loadflow.study_execution.*,
+      powsybl_open_loadflow.state_and_result_mapping.study_result_mapping {
+      color green
+    }
+  }
+}

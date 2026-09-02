@@ -1,0 +1,13 @@
+model {
+  extend powsybl_open_loadflow {
+    open_loadflow_provider = provider 'OpenLoadFlowProvider' 'Implements LoadFlowProvider for AC and DC load flows.'
+    open_sensitivity_provider = provider 'OpenSensitivityAnalysisProvider' 'Implements SensitivityAnalysisProvider.'
+    open_security_provider = provider 'OpenSecurityAnalysisProvider' 'Implements SecurityAnalysisProvider.'
+  }
+
+  powsybl_open_loadflow.open_loadflow_provider -> powsybl_open_loadflow.ac_dc_loadflow_engines 'runs AC or DC calculation'
+  powsybl_open_loadflow.open_loadflow_provider -> powsybl_open_loadflow.lf_network_adapter 'loads the computation network'
+  powsybl_open_loadflow.open_sensitivity_provider -> powsybl_open_loadflow.sensitivity_engines 'runs sensitivity calculation'
+  powsybl_open_loadflow.open_sensitivity_provider -> powsybl_open_loadflow.open_loadflow_provider 'uses the configured base-case load-flow provider'
+  powsybl_open_loadflow.open_security_provider -> powsybl_open_loadflow.security_analysis_engines 'runs pre/post-contingency simulations'
+}

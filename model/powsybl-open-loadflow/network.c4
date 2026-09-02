@@ -1,0 +1,15 @@
+model {
+  extend powsybl_open_loadflow {
+    lf_network_adapter = adapter 'IIDM to LfNetwork adapter' 'Networks, LfNetworkLoaderImpl, and equipment-specific Lf* adapters.' {
+      network_loader = component 'Networks and LfNetworkLoader' 'Builds the solver-facing topology and reconnectable elements from IIDM.'
+    }
+    lf_network = model 'LfNetwork' 'Solver-facing electrical network, topology, equations, and state.'
+    contingency_propagation = adapter 'Contingency propagation' 'PropagatedContingency, ContingencyTripping, and node/breaker traversal.'
+    state_and_result_mapping = adapter 'IIDM state and core-result mapping' 'Updates IIDM state and adapts solver outputs to Core result contracts.'
+  }
+
+  powsybl_open_loadflow.lf_network_adapter -> powsybl_open_loadflow.lf_network 'builds and configures'
+  powsybl_open_loadflow.lf_network_adapter.network_loader -> powsybl_open_loadflow.lf_network 'builds and configures'
+  powsybl_open_loadflow.lf_network -> powsybl_open_loadflow.equation_toolkit 'supplies variables and network state to'
+  powsybl_open_loadflow.contingency_propagation -> powsybl_open_loadflow.lf_network 'produces LfContingency operations for'
+}

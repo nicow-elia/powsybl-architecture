@@ -1,0 +1,13 @@
+views {
+  view pypowsybl_binding_layers of pypowsybl {
+    title 'pypowsybl: Binding and DataFrame layers'
+    description 'pypowsybl adapts public Powsybl APIs for Python. The Python package delegates through pybind11 and the GraalVM native image to Java C entry points; DataFrame adapters project IIDM data into pandas and marshal edits back to the Java model.'
+    include *
+    exclude powsybl_core
+    exclude powsybl_open_loadflow
+    exclude pypowsybl_capability_bundle
+    exclude pypowsybl_bundled_services
+    exclude study_configuration_sources
+    include pypowsybl.java_bindings.*
+  }
+}

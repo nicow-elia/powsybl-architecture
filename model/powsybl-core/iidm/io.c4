@@ -1,0 +1,89 @@
+model {
+  extend powsybl_core.iidm {
+    io = module 'IIDM I/O and format providers' 'Network.read and Network.write select registered Importer and Exporter implementations.' {
+      network_read_write = api 'Network.read / Network.write' 'Facade methods on Network.'
+      importer_spi = api 'Importer and Importers' 'SPI for constructing an IIDM Network from a data source.'
+      exporter_spi = api 'Exporter and Exporters' 'SPI for writing an IIDM Network to a data sink.'
+      provider_discovery = component 'Importers/Exporters ServiceLoader' 'Discovers @AutoService provider implementations.'
+
+      exchange_formats = module 'Supported exchange formats' {
+        cgmes = format 'CGMES'
+        ucte = format 'UCTE'
+        matpower = format 'MATPOWER'
+        psse = format 'PSS/E'
+        ieee_cdf = format 'IEEE CDF'
+        powerfactory = format 'PowerFactory'
+        xiidm = format 'XIIDM XML'
+        jiidm = format 'JIIDM JSON'
+        biidm = format 'BIIDM binary'
+        ampl = format 'AMPL'
+      }
+
+      import_providers = module 'Importer implementations' {
+        cgmes_importer = adapter 'CgmesImport'
+        ucte_importer = adapter 'UcteImporter'
+        matpower_importer = adapter 'MatpowerImporter'
+        psse_importer = adapter 'PsseImporter'
+        ieee_cdf_importer = adapter 'IeeeCdfImporter'
+        powerfactory_importer = adapter 'PowerFactoryImporter'
+        xiidm_importer = adapter 'XMLImporter'
+        jiidm_importer = adapter 'JsonImporter'
+        biidm_importer = adapter 'BinaryImporter'
+      }
+
+      export_providers = module 'Exporter implementations' {
+        cgmes_exporter = adapter 'CgmesExport'
+        ucte_exporter = adapter 'UcteExport'
+        matpower_exporter = adapter 'MatpowerExport'
+        psse_exporter = adapter 'PsseExport'
+        xiidm_exporter = adapter 'XMLExport'
+        jiidm_exporter = adapter 'JsonExport'
+        biidm_exporter = adapter 'BinaryExport'
+        ampl_exporter = adapter 'AmplExport'
+      }
+    }
+  }
+
+  powsybl_core.iidm.io.network_read_write -> powsybl_core.iidm.io.importer_spi 'selects input provider'
+  powsybl_core.iidm.io.network_read_write -> powsybl_core.iidm.io.exporter_spi 'selects output provider'
+  powsybl_core.iidm.io.provider_discovery -> powsybl_core.iidm.io.importer_spi 'discovers implementations for'
+  powsybl_core.iidm.io.provider_discovery -> powsybl_core.iidm.io.exporter_spi 'discovers implementations for'
+
+  powsybl_core.iidm.io.exchange_formats.cgmes -> powsybl_core.iidm.io.import_providers.cgmes_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.ucte -> powsybl_core.iidm.io.import_providers.ucte_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.matpower -> powsybl_core.iidm.io.import_providers.matpower_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.psse -> powsybl_core.iidm.io.import_providers.psse_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.ieee_cdf -> powsybl_core.iidm.io.import_providers.ieee_cdf_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.powerfactory -> powsybl_core.iidm.io.import_providers.powerfactory_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.xiidm -> powsybl_core.iidm.io.import_providers.xiidm_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.jiidm -> powsybl_core.iidm.io.import_providers.jiidm_importer 'loads'
+  powsybl_core.iidm.io.exchange_formats.biidm -> powsybl_core.iidm.io.import_providers.biidm_importer 'loads'
+
+  powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.ucte_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.matpower_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.psse_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.ieee_cdf_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.powerfactory_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.xiidm_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.jiidm_importer -> powsybl_core.iidm.network 'creates or updates'
+  powsybl_core.iidm.io.import_providers.biidm_importer -> powsybl_core.iidm.network 'creates or updates'
+
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.cgmes_exporter 'serializes'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.ucte_exporter 'serializes'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.matpower_exporter 'serializes'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.psse_exporter 'serializes'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.xiidm_exporter 'serializes'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.jiidm_exporter 'serializes'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.biidm_exporter 'serializes'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.export_providers.ampl_exporter 'serializes'
+
+  powsybl_core.iidm.io.export_providers.cgmes_exporter -> powsybl_core.iidm.io.exchange_formats.cgmes 'writes'
+  powsybl_core.iidm.io.export_providers.ucte_exporter -> powsybl_core.iidm.io.exchange_formats.ucte 'writes'
+  powsybl_core.iidm.io.export_providers.matpower_exporter -> powsybl_core.iidm.io.exchange_formats.matpower 'writes'
+  powsybl_core.iidm.io.export_providers.psse_exporter -> powsybl_core.iidm.io.exchange_formats.psse 'writes'
+  powsybl_core.iidm.io.export_providers.xiidm_exporter -> powsybl_core.iidm.io.exchange_formats.xiidm 'writes'
+  powsybl_core.iidm.io.export_providers.jiidm_exporter -> powsybl_core.iidm.io.exchange_formats.jiidm 'writes'
+  powsybl_core.iidm.io.export_providers.biidm_exporter -> powsybl_core.iidm.io.exchange_formats.biidm 'writes'
+  powsybl_core.iidm.io.export_providers.ampl_exporter -> powsybl_core.iidm.io.exchange_formats.ampl 'writes'
+}

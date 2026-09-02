@@ -1,0 +1,57 @@
+model {
+  extend powsybl_core.iidm {
+    injections = module 'Injections' 'Connectable equipment that produces, consumes, or compensates power.' {
+      generator = component 'Generator'
+      load = component 'Load' 'Includes ZIP and exponential load models.'
+      battery = component 'Battery'
+      shunt_compensator = component 'ShuntCompensator' 'Linear or non-linear shunt model.'
+      static_var_compensator = component 'StaticVarCompensator'
+      ground = component 'Ground'
+    }
+
+    branches = module 'AC branches' 'Connectable equipment joining two AC terminals.' {
+      branch = component 'Branch' 'Base branch contract.'
+      ac_line = component 'Line'
+      tie_line = component 'TieLine'
+    }
+
+    transformers = module 'Transformers and tap changers' 'AC transformers and their voltage/phase regulation equipment.' {
+      two_windings_transformer = component 'TwoWindingsTransformer'
+      three_windings_transformer = component 'ThreeWindingsTransformer'
+      ratio_tap_changer = component 'RatioTapChanger'
+      phase_tap_changer = component 'PhaseTapChanger'
+    }
+
+    hvdc = module 'HVDC equipment' 'HVDC line and AC/DC converter-station model.' {
+      hvdc_line = component 'HvdcLine'
+      vsc_converter_station = component 'VscConverterStation'
+      lcc_converter_station = component 'LccConverterStation'
+    }
+
+    dc_grid = module 'DC grid equipment' 'The explicit DC network topology model.' {
+      dc_bus = component 'DcBus'
+      dc_line = component 'DcLine'
+      dc_switch = component 'DcSwitch'
+    }
+
+    limits_and_control = module 'Limits and automation' 'Operating limits, reactive limits, and automation systems attached to equipment.' {
+      operational_limits = component 'OperationalLimits and LoadingLimits'
+      reactive_limits = component 'ReactiveLimits'
+      automation_system = component 'AutomationSystem and OverloadManagementSystem'
+    }
+
+    extensions = module 'IIDM extensions' 'Extension points and common calculated-state extensions.' {
+      extension_contract = component 'Extension and Extendable' 'Extension mechanism available on IIDM objects.'
+      slack_terminal = component 'SlackTerminal'
+      reference_terminals = component 'ReferenceTerminals'
+      cgmes_extensions = component 'CGMES extensions' 'CGMES-specific data carried beside the IIDM model.'
+    }
+  }
+
+  powsybl_core.iidm.transformers.two_windings_transformer -> powsybl_core.iidm.transformers.ratio_tap_changer 'may own'
+  powsybl_core.iidm.transformers.two_windings_transformer -> powsybl_core.iidm.transformers.phase_tap_changer 'may own'
+  powsybl_core.iidm.transformers.three_windings_transformer -> powsybl_core.iidm.transformers.ratio_tap_changer 'may own per leg'
+  powsybl_core.iidm.transformers.three_windings_transformer -> powsybl_core.iidm.transformers.phase_tap_changer 'may own per leg'
+  powsybl_core.iidm.hvdc.hvdc_line -> powsybl_core.iidm.hvdc.vsc_converter_station 'connects through'
+  powsybl_core.iidm.hvdc.hvdc_line -> powsybl_core.iidm.hvdc.lcc_converter_station 'connects through'
+}

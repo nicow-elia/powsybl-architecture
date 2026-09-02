@@ -1,0 +1,34 @@
+model {
+  extend powsybl_core {
+    iidm = module 'IIDM API and extensions' 'The mutable electrical-network object model, its principal interfaces, extensions, and format providers.' {
+      network = model 'Network' 'IIDM Network and working variant passed by reference to every analysis.'
+
+      common_types = module 'Common IIDM contracts' 'Base interfaces shared by the network model.' {
+        identifiable = component 'Identifiable' 'Base contract for named IIDM objects.'
+        connectable = component 'Connectable' 'Base contract for equipment that owns terminals.'
+        terminal = component 'Terminal' 'Electrical connection point between equipment and voltage-level topology.'
+      }
+
+      variants = module 'Network lifecycle' 'Network creation, variants, and mutation notifications.' {
+        network_factory = component 'NetworkFactory' 'Creates an IIDM Network implementation.'
+        variant_manager = component 'VariantManager' 'Selects and manages the working variant.'
+        network_listener = component 'NetworkListener' 'Receives IIDM network changes.'
+      }
+    }
+  }
+
+  powsybl_core.iidm.variants.network_factory -> powsybl_core.iidm.network 'creates'
+  powsybl_core.iidm.variants.variant_manager -> powsybl_core.iidm.network 'selects a working variant on'
+  powsybl_core.iidm.variants.network_listener -> powsybl_core.iidm.network 'observes changes on'
+
+  powsybl_core.iidm.network -> powsybl_core.iidm.common_types 'is composed of identifiable and connectable objects'
+  powsybl_core.iidm.network -> powsybl_core.iidm.topology 'owns electrical topology'
+  powsybl_core.iidm.network -> powsybl_core.iidm.injections 'owns injections'
+  powsybl_core.iidm.network -> powsybl_core.iidm.branches 'owns AC branches'
+  powsybl_core.iidm.network -> powsybl_core.iidm.transformers 'owns transformers and tap changers'
+  powsybl_core.iidm.network -> powsybl_core.iidm.hvdc 'owns DC equipment'
+  powsybl_core.iidm.network -> powsybl_core.iidm.dc_grid 'owns explicit DC topology'
+  powsybl_core.iidm.network -> powsybl_core.iidm.limits_and_control 'owns equipment with limits and automation'
+  powsybl_core.iidm.network -> powsybl_core.iidm.io.network_read_write 'provides facade methods for'
+  powsybl_core.iidm.extensions -> powsybl_core.iidm.network 'enriches state and results on'
+}

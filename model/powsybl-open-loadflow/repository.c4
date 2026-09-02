@@ -1,0 +1,3 @@
+model {
+  powsybl_open_loadflow = repository 'powsybl-open-loadflow' 'Provider implementations and numerical engines for Powsybl steady-state analyses.'
+}
