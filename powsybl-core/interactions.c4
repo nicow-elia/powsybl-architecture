@@ -1,5 +1,13 @@
 import { powsybl_open_loadflow } from 'powsybl-open-loadflow'
 
+model {
+  powsybl_core.loadflow_api -> powsybl_open_loadflow.open_loadflow_provider 'discovers and runs'
+  powsybl_core.sensitivity_api -> powsybl_open_loadflow.open_sensitivity_provider 'discovers and runs'
+  powsybl_core.security_analysis_api -> powsybl_open_loadflow.open_security_provider 'discovers and runs'
+  powsybl_core.iidm.network -> powsybl_open_loadflow.lf_network_adapter 'is adapted by'
+  powsybl_core.contingency_api -> powsybl_open_loadflow.contingency_propagation 'is propagated by'
+}
+
 views {
   view loadflow_interaction {
     title 'Load Flow: powsybl-core to Open Load Flow'
@@ -50,21 +58,4 @@ views {
     include powsybl_open_loadflow.state_and_result_mapping
   }
 
-  view iidm_network_interaction {
-    title 'IIDM Network: Shared Model Across Analyses'
-    description 'The IIDM Network and its electrical components remain the shared source of truth. Core APIs accept it directly; OLF maps it to LfNetwork for calculations and writes calculated state back after load flow.'
-    include powsybl_core.iidm.network
-    include powsybl_core.iidm.topology
-    include powsybl_core.iidm.variants
-    include powsybl_core.iidm.extensions
-    include powsybl_core.loadflow_api
-    include powsybl_core.sensitivity_api
-    include powsybl_core.security_analysis_api
-    include powsybl_open_loadflow.open_loadflow_provider
-    include powsybl_open_loadflow.open_sensitivity_provider
-    include powsybl_open_loadflow.open_security_provider
-    include powsybl_open_loadflow.lf_network_adapter
-    include powsybl_open_loadflow.lf_network
-    include powsybl_open_loadflow.state_and_result_mapping
-  }
 }

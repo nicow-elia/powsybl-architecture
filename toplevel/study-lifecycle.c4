@@ -1,0 +1,71 @@
+model {
+  study_configuration_sources = component 'Configuration sources' 'Application code, JSON configuration, and PlatformConfig defaults.'
+
+  core_study_contracts = module 'powsybl-core: study contracts' {
+    study_apis = api 'Security and Sensitivity Analysis APIs' 'Runners, provider SPIs, parameters, and result contracts.'
+    common_study_parameters = component 'Core study parameters' 'LoadFlowParameters, SecurityAnalysisParameters, and SensitivityAnalysisParameters.'
+    contingencies_and_contexts = component 'Contingencies and contexts' 'Contingency lists, N/N-1 contexts, and affected equipment.'
+    action_definitions = component 'Action definitions' 'Switch, terminal connection, generator, load, HVDC, and tap-changer actions.'
+    operator_strategies = component 'Operator strategies and conditions' 'Conditional actions selected for a contingency context.'
+    state_monitors = component 'StateMonitor definitions' 'Select branches, buses, and three-winding transformers recorded for each context.'
+    selected_loading_limits = component 'Selected LoadingLimits' 'Active IIDM limit groups and their associated thresholds.'
+    modified_result_parameters = component 'Modified monitored-elements parameters' 'Power and voltage deltas that suppress unchanged N-1 monitored results.'
+
+    study_apis -> common_study_parameters 'runs with'
+    study_apis -> contingencies_and_contexts 'accepts'
+    study_apis -> action_definitions 'accepts'
+    study_apis -> operator_strategies 'accepts'
+    study_apis -> state_monitors 'accepts'
+    common_study_parameters -> modified_result_parameters 'contains'
+  }
+
+  olf_study_execution = module 'powsybl-open-loadflow: study execution' {
+    provider_parameter_extensions = component 'OLF provider parameter extensions' 'Open Load Flow, security-analysis, and sensitivity-analysis extensions.'
+    propagated_contingencies = adapter 'PropagatedContingency' 'Translates Core outages into solver-network operations.'
+    lf_actions_and_strategies = adapter 'LfAction and LfOperatorStrategy' 'Validates and translates Core actions and conditional strategies against LfNetwork.'
+    pre_contingency_state = component 'Pre-contingency N state' 'Base calculation, limit evaluation, and monitored result baseline.'
+    post_contingency_state = component 'Post-contingency N-1 state' 'Calculation after the propagated outage.'
+    post_action_state = component 'Post-action state' 'Calculation after a selected operator strategy applies curative actions.'
+    limit_violation_evaluator = component 'Limit violation evaluation' 'Evaluates active loading limits and reductions for each calculated state.'
+    monitored_result_filter = component 'Monitored-result delta filter' 'Omits unchanged monitored branch, bus, and transformer results from N-1 output.'
+    study_result_mapping = adapter 'Core study result mapping' 'Builds security results and supported sensitivity-context results.'
+
+    provider_parameter_extensions -> pre_contingency_state 'configures'
+    propagated_contingencies -> post_contingency_state 'applies outages for'
+    pre_contingency_state -> post_contingency_state 'provides the N baseline for'
+    lf_actions_and_strategies -> post_action_state 'selects and applies curative actions for'
+    post_contingency_state -> post_action_state 'provides the N-1 state for'
+    pre_contingency_state -> limit_violation_evaluator 'evaluates'
+    post_contingency_state -> limit_violation_evaluator 'evaluates'
+    post_action_state -> limit_violation_evaluator 'evaluates'
+    pre_contingency_state -> monitored_result_filter 'compares N results through'
+    post_contingency_state -> monitored_result_filter 'filters N-1 results through'
+    post_action_state -> monitored_result_filter 'filters post-action results through'
+    limit_violation_evaluator -> study_result_mapping 'adds violations to'
+    monitored_result_filter -> study_result_mapping 'adds selected monitored results to'
+  }
+
+  python_study_surface = module 'pypowsybl: study configuration and results' {
+    python_study_parameters = api 'Python study parameter facades' 'Python load-flow, security-analysis, and sensitivity-analysis parameters.'
+    native_parameter_abi = binding 'Native parameter and result ABI' 'pybind11, GraalVM C entry points, and Java parameter mappers.'
+    pandas_study_results = adapter 'pandas study result adapters' 'DataFrames for monitored state, violations, factors, and statuses.'
+
+    python_study_parameters -> native_parameter_abi 'marshals through'
+    native_parameter_abi -> pandas_study_results 'returns result series through'
+  }
+
+  study_configuration_sources -> core_study_contracts.common_study_parameters 'sets defaults and JSON values for'
+  study_configuration_sources -> olf_study_execution.provider_parameter_extensions 'sets provider-specific values for'
+  core_study_contracts.common_study_parameters -> olf_study_execution.provider_parameter_extensions 'carries extensions to'
+  core_study_contracts.contingencies_and_contexts -> olf_study_execution.propagated_contingencies 'maps to'
+  core_study_contracts.action_definitions -> olf_study_execution.lf_actions_and_strategies 'maps to'
+  core_study_contracts.operator_strategies -> olf_study_execution.lf_actions_and_strategies 'maps to'
+  core_study_contracts.state_monitors -> olf_study_execution.pre_contingency_state 'selects output from'
+  core_study_contracts.state_monitors -> olf_study_execution.post_contingency_state 'selects output from'
+  core_study_contracts.state_monitors -> olf_study_execution.post_action_state 'selects output from'
+  core_study_contracts.selected_loading_limits -> olf_study_execution.limit_violation_evaluator 'supplies active groups to'
+  core_study_contracts.modified_result_parameters -> olf_study_execution.monitored_result_filter 'configures'
+  olf_study_execution.study_result_mapping -> core_study_contracts.study_apis 'returns results through'
+  python_study_surface.native_parameter_abi -> core_study_contracts.common_study_parameters 'maps Python values into'
+  core_study_contracts.study_apis -> python_study_surface.native_parameter_abi 'returns through'
+}

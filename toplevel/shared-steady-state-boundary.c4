@@ -13,17 +13,6 @@ model {
     summary 'MatrixFactory, Matrix, DenseMatrix, and LUDecomposition.'
     description 'Common numerical contract in both proposals. LUDecomposition already belongs to powsybl-math; the proposed OpenSteadyState change is to retain and expose caller-controlled factorization so state estimation can batch solve(DenseMatrix) for WLS diagnostics.'
   }
-  shared_open_steady_state = module 'OpenSteadyState shared toolbox' {
-    summary 'Reusable topology, admittance, equation, derivative, Jacobian, state-variable, and AC P/Q/I flow-term contracts.'
-    description 'Proposal A delivers this as powsybl-open-steady-state. Proposal B delivers it as the open-steady-state module inside the OLF monorepo.'
-  }
-  shared_loadflow_only = module 'Load-flow-only layer' {
-    summary 'AcloadFlowEngine, DcLoadFlowEngine, AcEquationSystemCreator, AcEquationSystemUpdater, AC solvers, outer loops, and OpenLoadFlowProvider.'
-    description 'JacobianMatrixFastDecoupled remains load-flow specific and stays outside the shared boundary.'
-  }
-  shared_state_estimation_logic = provider 'State-estimation-only layer' {
-    summary 'Measurement normalization, h(x), H, WLS, observability, residual diagnostics, and result mapping.'
-  }
 
   shared_topology_admittance = component 'OpenSteadyState: topology and admittance' {
     summary 'LfNetwork, LfNetworkLoader, LfNetworkLoaderImpl, GraphConnectivity, and AdmittanceMatrix.'
@@ -38,13 +27,6 @@ model {
   shared_ac_flow_terms = component 'OpenSteadyState: AC P/Q/I flow terms' {
     summary 'AbstractClosedBranchAcFlowEquationTerm and ClosedBranchSide1ActiveFlowEquationTerm provide reusable h(x) and derivatives.'
   }
-
-  shared_state_estimation_core_api -> shared_state_estimation_logic 'selects StateEstimationProvider through ServiceLoader'
-  shared_iidm_measurement_boundary -> shared_state_estimation_logic 'passes Network, Measurement, and Observability'
-  shared_state_estimation_logic -> shared_open_steady_state 'uses the shared toolbox'
-  shared_loadflow_only -> shared_open_steady_state 'uses the shared toolbox'
-  shared_open_steady_state -> shared_math_contract 'uses matrix and factorization contracts'
-  shared_state_estimation_logic -> shared_math_contract 'reuses factors for WLS diagnostics'
 
   shared_topology_admittance -> shared_equation_derivatives 'supplies the electrical network model to'
   shared_ac_flow_terms -> shared_equation_derivatives 'implements P/Q/I terms for'

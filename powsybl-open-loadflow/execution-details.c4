@@ -1,0 +1,64 @@
+views {
+  view fast_restart_and_network_cache {
+    title 'Open Load Flow: Fast Restart and NetworkCache'
+    description 'NetworkCache observes IIDM changes and parameter compatibility to reuse solver networks. The generic entry design backs both AC and DC load-flow fast restart; topology changes trigger the stricter reset path, while compatible changes can reuse a loaded computation network.'
+
+    include powsybl_open_loadflow.network_cache.*
+    include powsybl_open_loadflow.state_and_result_mapping
+    autoLayout LeftRight
+
+    style powsybl_open_loadflow.network_cache.iidm_change_events,
+      powsybl_open_loadflow.network_cache.cache_input,
+      powsybl_open_loadflow.state_and_result_mapping {
+      color indigo
+    }
+    style powsybl_open_loadflow.network_cache.network_cache_entry,
+      powsybl_open_loadflow.network_cache.ac_cache_value,
+      powsybl_open_loadflow.network_cache.dc_cache_value,
+      powsybl_open_loadflow.network_cache.change_classifier {
+      color sky
+    }
+    style powsybl_open_loadflow.network_cache.ac_fast_restart,
+      powsybl_open_loadflow.network_cache.dc_fast_restart {
+      color green
+    }
+  }
+
+  view solver_and_outer_loop_pipeline {
+    title 'Open Load Flow: AC Solver and Outer-Loop Pipeline'
+    description 'The implemented AC path loads IIDM into LfNetwork, constructs an AC equation system, chooses Newton-Raphson, Newton-Krylov, or Fast-Decoupled, and iterates outer-loop controls before mapping final state to IIDM. Detailed AC/DC mode is documented separately because it requires the coupled Newton-Raphson formulation.'
+
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.load_flow_request
+    include powsybl_open_loadflow.lf_network_adapter.network_loader
+    include powsybl_open_loadflow.lf_network
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.ac_load_flow_engine
+    include powsybl_open_loadflow.equation_toolkit.ac_equation_builder
+    include powsybl_open_loadflow.equation_toolkit.equation_system
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.ac_solver_factory
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.newton_raphson
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.newton_krylov
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.fast_decoupled
+    include powsybl_open_loadflow.ac_dc_loadflow_engines.outer_loop_chain
+    include powsybl_open_loadflow.state_and_result_mapping
+    autoLayout LeftRight
+
+    style powsybl_open_loadflow.ac_dc_loadflow_engines.load_flow_request,
+      powsybl_open_loadflow.lf_network_adapter.network_loader,
+      powsybl_open_loadflow.state_and_result_mapping {
+      color indigo
+    }
+    style powsybl_open_loadflow.lf_network,
+      powsybl_open_loadflow.equation_toolkit.ac_equation_builder,
+      powsybl_open_loadflow.equation_toolkit.equation_system,
+      powsybl_open_loadflow.ac_dc_loadflow_engines.ac_solver_factory,
+      powsybl_open_loadflow.ac_dc_loadflow_engines.outer_loop_chain {
+      color sky
+    }
+    style powsybl_open_loadflow.ac_dc_loadflow_engines.ac_load_flow_engine,
+      powsybl_open_loadflow.ac_dc_loadflow_engines.newton_raphson,
+      powsybl_open_loadflow.ac_dc_loadflow_engines.newton_krylov,
+      powsybl_open_loadflow.ac_dc_loadflow_engines.fast_decoupled {
+      color green
+    }
+  }
+}

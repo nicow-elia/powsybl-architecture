@@ -1,35 +1,7 @@
 views {
-  view shared_steady_state_boundary {
-    title 'OpenSteadyState: shared boundary in Proposals A and B'
-    description 'Both proposals expose the same reusable contracts. Proposal A ships them as powsybl-open-steady-state; Proposal B keeps them as an internal open-steady-state module. The load-flow-only and state-estimation-only layers stay on opposite sides of that boundary.'
-
-    include shared_state_estimation_core_api
-    include shared_iidm_measurement_boundary
-    include shared_open_steady_state
-    include shared_loadflow_only
-    include shared_state_estimation_logic
-    include shared_math_contract
-    autoLayout TopBottom
-
-    style shared_state_estimation_core_api,
-      shared_iidm_measurement_boundary,
-      shared_math_contract {
-      color indigo
-    }
-    style shared_open_steady_state {
-      color sky
-    }
-    style shared_loadflow_only {
-      color green
-    }
-    style shared_state_estimation_logic {
-      color amber
-    }
-  }
-
   view shared_steady_state_interfaces {
     title 'OpenSteadyState: shared interface inventory'
-    description 'This view names only the reusable boundary. Both the load-flow-only and state-estimation-only layers in the companion overview consume these topology, equation, derivative, Jacobian, state-variable, flow-term, matrix, and factorization contracts.'
+    description 'This view names only the reusable boundary. Both state-estimation placement alternatives consume these topology, equation, derivative, Jacobian, state-variable, flow-term, matrix, and factorization contracts.'
 
     include shared_topology_admittance
     include shared_equation_derivatives
@@ -43,12 +15,6 @@ views {
       shared_jacobian_state,
       shared_ac_flow_terms {
       color sky
-    }
-    style shared_loadflow_only {
-      color green
-    }
-    style shared_state_estimation_logic {
-      color amber
     }
     style shared_math_contract {
       color indigo

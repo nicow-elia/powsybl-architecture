@@ -1,0 +1,24 @@
+views {
+  view detailed_ac_dc_grid_lifecycle {
+    title 'Detailed AC/DC Grid: IIDM, Open Load Flow, and Python'
+    description 'Explicit DC equipment is held in the shared IIDM Network, converted to a coupled LfNetwork for the Open Load Flow AC/DC formulation, and written back as IIDM state and Python DataFrames. The pypowsybl ACDC OPF prototype is a separate optimizer over the same Network data, not an Open Load Flow provider.'
+
+    include detailed_ac_dc_iidm
+    include detailed_ac_dc_iidm.*
+    include detailed_ac_dc_olf
+    include detailed_ac_dc_olf.*
+    include detailed_ac_dc_python
+    include detailed_ac_dc_python.*
+    autoLayout LeftRight
+
+    style detailed_ac_dc_iidm, detailed_ac_dc_iidm.* {
+      color indigo
+    }
+    style detailed_ac_dc_olf, detailed_ac_dc_olf.* {
+      color green
+    }
+    style detailed_ac_dc_python, detailed_ac_dc_python.* {
+      color sky
+    }
+  }
+}

@@ -1,3 +1,6 @@
+import { powsybl_core } from 'powsybl-core'
+import { powsybl_open_loadflow } from 'powsybl-open-loadflow'
+
 views {
   view index {
     title 'Powsybl: APIs, Python bindings, and providers'
@@ -5,22 +8,27 @@ views {
 
     include python_surface
     include java_bridge
-    include iidm_network
+    include powsybl_core.iidm.network
     include analysis_apis
-    include contingency_api
+    include powsybl_core.contingency_api
     include provider_discovery
     include analysis_providers
-    include lf_network_adapter
-    include contingency_propagation
+    include powsybl_open_loadflow.lf_network_adapter
+    include powsybl_open_loadflow.contingency_propagation
     autoLayout LeftRight
 
     style python_surface, java_bridge {
       color sky
     }
-    style iidm_network, analysis_apis, contingency_api, provider_discovery {
+    style powsybl_core.iidm.network,
+      analysis_apis,
+      powsybl_core.contingency_api,
+      provider_discovery {
       color indigo
     }
-    style analysis_providers, lf_network_adapter, contingency_propagation {
+    style analysis_providers,
+      powsybl_open_loadflow.lf_network_adapter,
+      powsybl_open_loadflow.contingency_propagation {
       color green
     }
   }
