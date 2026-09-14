@@ -1,0 +1,17 @@
+// Proposed elements used by the State Estimation runtime sequences in
+// views/proposals/state-estimation-sequences.c4. The client is a neutral
+// caller. The Proposal B extension adds the topology-error and
+// network-parameter work packages of se_plan_followup.md (WP4, WP5); bad-data
+// detection and identification (WP3) are covered by
+// proposal_b_bad_data_diagnostics. None of these elements exist yet.
+model {
+  proposed_state_estimation_client = component 'Proposed State Estimation client' {
+    summary 'Java application, pypowsybl binding, or operator workflow that starts a State Estimation run.'
+    description 'Neutral caller for the proposed runtime sequences; it does not represent a specific existing application.'
+  }
+
+  extend proposal_b_open_simulator.proposal_b_state_estimation {
+    proposal_b_topology_error_processing = component 'Topology error processing' 'Builds bounded branch-status and substation-configuration hypotheses from an immutable node/breaker snapshot, re-estimates each in a detached calculation variant, and ranks them by normalized residuals, normalized Lagrange multipliers, and observability impact.'
+    proposal_b_parameter_estimation = component 'Network parameter estimation' 'Estimates selected, locally observable transformer taps, phase-shifter settings, and continuous branch parameters with priors, bounds, and uncertainty; results stay detached from the source network unless write-back is requested.'
+  }
+}

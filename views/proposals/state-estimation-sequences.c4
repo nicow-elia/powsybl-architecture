@@ -1,0 +1,130 @@
+// Runtime sequences for Proposal B. Algorithmic steps follow A. Abur and
+// A. Gomez Exposito, Power System State Estimation: Theory and Implementation
+// (Marcel Dekker, 2004); section numbers in notes refer to that book.
+views 'State Estimation: proposals' {
+  dynamic view state_estimation_proposal_b_sequence_mvp {
+    title 'Proposal B sequence: MVP State Estimation (observability and WLS)'
+    description 'Proposed runtime sequence after the SE MVP (se_plan.md): load network and measurements, project to bus/branch, prepare measurements, analyze observability, and run Gauss-Newton WLS per observable island. Bad-data detection, topology correction, and parameter estimation are out of scope. Loops are given as notes because sequence views have no loop fragment.'
+    variant sequence
+
+    proposed_state_estimation_client -> proposed_state_estimation_core_api 'StateEstimation.run(network, variantId, parameters)'
+    proposed_state_estimation_core_api -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider 'discover provider through ServiceLoader and run'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> powsybl_core.iidm 'load network variant and measurements'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- powsybl_core.iidm 'topology, switch status, parameters, taps, measurements with standard deviations'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_network 'project to bus/branch model and map measurements' {
+      notes 'Topology processor (section 8.1): applies switch and breaker status, merges bus sections into electrical buses, identifies energized islands, and maps measurement terminals to buses and branches.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- proposal_b_open_simulator.proposal_b_network 'islands and measurement mapping'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider 'prepare z, R, W' {
+      notes 'Unit and sign normalization, plausibility filter (chapter 5 introduction), weighted merge of duplicates. Zero injections become equality constraints (section 3.5) or high-weight pseudo-measurements.'
+    }
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_observability_analysis 'topological observability per island' {
+      notes 'Section 4.7: flow measurements form a forest that injections merge; a spanning tree means observable. Section 4.8: critical measurements are those whose removal makes the island unobservable.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_observability_analysis 'observable islands, critical measurements'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 'estimate each observable island' {
+      notes 'Flat or warm start with one reference angle per island. Unobservable islands follow the configured failure policy.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel -> proposal_b_open_simulator.proposal_b_core 'build h(x) and Jacobian H'
+    proposal_b_open_simulator.proposal_b_core -> proposal_b_open_simulator.proposal_b_matrix 'sparse rectangular H'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel -> proposal_b_open_simulator.proposal_b_matrix 'G = H^T W H, sparse factorization, solve for delta x' {
+      notes 'Sections 2.6.3-2.6.5. Factors are retained for later diagnostics.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 'update x, check convergence' {
+      notes 'Repeat h(x), H, and the solve until max |delta x| < epsilon or the iteration limit is reached.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 'x hat, residuals, convergence status'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_network 'map bus/branch estimates to IIDM elements'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> powsybl_core.iidm 'optional write-back of state and observability'
+    proposed_state_estimation_core_api <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider 'StateEstimationResult and StateEstimationReport'
+    proposed_state_estimation_client <- proposed_state_estimation_core_api 'per-island status, estimated state, observability'
+
+    style proposed_state_estimation_client,
+      proposed_state_estimation_core_api,
+      proposal_b_open_simulator.** {
+      color amber
+    }
+    style powsybl_core.** {
+      color indigo
+    }
+  }
+
+  dynamic view state_estimation_proposal_b_sequence_followup {
+    title 'Proposal B sequence: State Estimation with bad-data, topology, and parameter processing'
+    description 'Proposed runtime sequence once se_plan_followup.md WP3-WP5 are implemented. WLS internals match the MVP sequence. Topology hypotheses are evaluated before clustered measurements are discarded, and parameters are estimated only after bad-data and topology explanations are excluded. Corrections stay run-local and are written back only on request.'
+    variant sequence
+
+    proposed_state_estimation_client -> proposed_state_estimation_core_api 'StateEstimation.run(network, variantId, parameters)'
+    proposed_state_estimation_core_api -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider 'run with bad-data, topology, and parameter options'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> powsybl_core.iidm 'load immutable node/breaker snapshot and measurements'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- powsybl_core.iidm 'snapshot and source measurements'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_network 'project to bus/branch, keep node/breaker provenance' {
+      notes 'Section 8.4: keeping the bus section-switch model lets topology hypotheses be rebuilt later.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider 'create run-local working measurement set' {
+      notes 'Every normalized observation keeps provenance to its source measurements; exclusions are audited and never mutate IIDM.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_observability_analysis 'observability and measurement classification' {
+      notes 'Sections 5.2-5.3: bad data in a critical measurement cannot be detected; a member of a critical pair can be detected but not identified.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 'WLS estimate'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 'x hat, residuals, H, retained factors'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_bad_data_diagnostics 'chi-square test and normalized residuals' {
+      notes 'Section 5.4.3: J(x hat) is compared with chi-square(m - n) at the configured confidence, with m and n counted on the working set. Section 5.1: normalized residuals use the diagonal of Omega = R - H G^-1 H^T from the retained factors.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_bad_data_diagnostics 'test outcome, isolated suspects, correlated clusters' {
+      notes 'If the test passes, processing continues with result mapping. Sections 7.3 and 8.3: topology and parameter errors appear as correlated residuals around a branch or substation.'
+    }
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_topology_error_processing 'assess topology-signature clusters before any removal' {
+      notes 'Section 8.1: unhandled topology errors make bad-data removal discard valid measurements.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_topology_error_processing -> proposal_b_open_simulator.proposal_b_network 'build bounded hypotheses in detached variants' {
+      notes 'One branch status or one local bus split or merge per hypothesis (sections 8.2-8.3).'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_topology_error_processing -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 're-estimate each hypothesis with breaker flow constraints' {
+      notes 'Section 8.7.3: candidates are ranked by normalized residuals and normalized Lagrange multipliers of the breaker status constraints.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_topology_error_processing 'ranked candidates or inconclusive'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_bad_data_diagnostics 'identify largest normalized residual' {
+      notes 'Section 5.7: largest normalized residual test with a configurable threshold such as 3.0.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_bad_data_diagnostics -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_observability_analysis 'gate: not critical, island stays observable'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 'deactivate suspect in working set and re-estimate' {
+      notes 'Repeat detection, identification, and re-estimation until the test passes or the removal-cycle limit is reached; ambiguous patterns end inconclusive.'
+    }
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_parameter_estimation 'assess persistent clusters adjacent to a branch' {
+      notes 'Only after bad-data and topology explanations are excluded (section 7.3).'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_parameter_estimation -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_observability_analysis 'parameter observability and local redundancy' {
+      notes 'Section 7.9: needs redundant adjacent measurements and non-negligible flow; taps need voltage or reactive-power measurements.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_parameter_estimation -> proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_wls_kernel 'augmented-state estimate, feasible discrete taps' {
+      notes 'Section 7.6: parameters added to the state vector with priors and bounds. Section 7.8: taps are rounded to feasible positions and re-estimated.'
+    }
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_parameter_estimation 'estimates, uncertainty, update recommendation'
+
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> proposal_b_open_simulator.proposal_b_network 'map estimates to IIDM elements'
+    proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider -> powsybl_core.iidm 'opt-in write-back of state and accepted corrections'
+    proposed_state_estimation_core_api <- proposal_b_open_simulator.proposal_b_state_estimation.proposal_b_state_estimation_provider 'result, report, and audit trail'
+    proposed_state_estimation_client <- proposed_state_estimation_core_api 'result quality: passed, corrected, inconclusive, or failed'
+
+    style proposed_state_estimation_client,
+      proposed_state_estimation_core_api,
+      proposal_b_open_simulator.** {
+      color amber
+    }
+    style powsybl_core.** {
+      color indigo
+    }
+  }
+}
