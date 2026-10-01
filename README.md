@@ -9,7 +9,10 @@ This directory contains one LikeC4 project for the repositories checked out besi
 - `model/as-is/` and `views/as-is/` document source-confirmed behavior in the checked-out repositories. Their FQNs identify real code or documented public contracts.
 - `model/proposals/` and `views/proposals/` describe target architecture only. New target elements use `proposed_*` or a proposal-specific root such as `proposal_a_*`; they must not extend a factual FQN.
 - Proposal relationships may point to factual FQNs using intent labels such as `would consume as-is`, `would extract into`, or `would expose support for`. This shows reuse without claiming that the target capability already exists.
-- `model/00-specification.c4` is shared LikeC4 vocabulary rather than factual or target architecture.
+- `model/00-specification.c4` is shared LikeC4 vocabulary rather than factual or target architecture. Its element
+  kinds are `repository, module, api, provider, engine, adapter, model, component, binding, library, format,
+  database`; `database` names an external data store that Powsybl talks to over a wire protocol rather than a
+  piece of Powsybl itself.
 
 The source evidence for factual State Estimation building blocks and the absence of an estimator, including reviewed branches and commits, is recorded in [architecture-evidence.md](architecture-evidence.md).
 
