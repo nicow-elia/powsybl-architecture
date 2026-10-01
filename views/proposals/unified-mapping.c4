@@ -1,0 +1,56 @@
+views 'Unified mapping: proposal' {
+  view unified_mapping_before {
+    title 'Unified mapping: before - every path knows the mapping itself'
+    description 'At the start of the rework (powsybl-core bb9cb0eb85) the full SSH export, the change exports (partial SSH and difference model, with the database as one sink) and the in-place import of a difference each stated the mapping in code of their own, and the importer had its own update: the same rule was written up to 19 times (generator sign), 13 times for EnergyConsumer.p.'
+
+    include powsybl_core
+    include powsybl_core.iidm
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.io
+    include powsybl_core.iidm.io.export_providers
+    include powsybl_core.iidm.io.export_providers.cgmes_exporter
+    include powsybl_core.cgmes
+    include powsybl_core.cgmes.partial_ssh_export
+    include powsybl_core.cgmes.cgmes_diff_export
+    include powsybl_core.cgmes.change_translator
+    include powsybl_core.cgmes.difference_model
+    include powsybl_core.cgmes.difference_sink
+    include powsybl_core.cgmes.cgmes_diff_import
+    include powsybl_core.cgmes.fast_route_capabilities
+    include powsybl_core.cgmes.cgmes_object_dump
+    include powsybl_core.cgmes.conversion_update
+    include proposed_unified_mapping
+    include proposed_unified_mapping.before_ssh_writers
+    include proposed_unified_mapping.before_probes
+  }
+
+  view unified_mapping_after {
+    title 'Unified mapping: after - families, one sink, every path a consumer'
+    description 'On the branch at p4-merged (20ce552c50): eight family classes and the plain rows state each rule once; they describe an object into a CgmesPropertySink for the full SSH export and for every change export, the in-place import resolves and completes subjects through them, its capability table is derived from their blocks, and the importer reads loads, control areas and switches through the rows. The mapping page of the documentation is generated from them.'
+
+    include powsybl_core
+    include powsybl_core.iidm
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.io
+    include powsybl_core.iidm.io.export_providers
+    include powsybl_core.iidm.io.export_providers.cgmes_exporter
+    include powsybl_core.iidm.io.exchange_formats
+    include powsybl_core.iidm.io.exchange_formats.cgmes
+    include powsybl_core.cgmes
+    include powsybl_core.cgmes.partial_ssh_export
+    include powsybl_core.cgmes.cgmes_diff_export
+    include powsybl_core.cgmes.change_translator
+    include powsybl_core.cgmes.difference_model
+    include powsybl_core.cgmes.difference_sink
+    include powsybl_core.cgmes.cgmes_diff_import
+    include powsybl_core.cgmes.fast_route_capabilities
+    include powsybl_core.cgmes.conversion_update
+    include proposed_unified_mapping
+    include proposed_unified_mapping.families
+    include proposed_unified_mapping.plain_rows
+    include proposed_unified_mapping.property_sink
+    include proposed_unified_mapping.refusal
+    include proposed_unified_mapping.subject_index
+    include proposed_unified_mapping.mapping_page
+  }
+}

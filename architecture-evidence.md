@@ -67,3 +67,55 @@ The final row is a negative finding from source and module-list searches. It doe
 | `powsybl_core.cgmes.rdfdb.variant_binding` | powsybl-core | `powsybl-core/cgmes/cgmes-rdfdb/src/main/java/com/powsybl/cgmes/rdfdb/{VariantBinding,VariantOutcome,RdfDbProvenanceImpl}.java` (the `BindingListener` inner class); tests `RdfDbProvenanceVariantTest` | `feat/diffstacking` / `c8c7f57f0f` | 2026-09-21 |
 | `powsybl_core.cgmes.rdfdb.variant_scope` | powsybl-core | `powsybl-core/cgmes/cgmes-rdfdb/src/main/java/com/powsybl/cgmes/rdfdb/{VariantScope,NetworkIdentity}.java` (`capture`, `install`), `powsybl-core/cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/export/ExportVariantScope.java` | `feat/diffstacking` / `c8c7f57f0f` | 2026-09-21 |
 | `powsybl_core.cgmes.rdfdb.variant_updater` | powsybl-core | `powsybl-core/cgmes/cgmes-rdfdb/src/main/java/com/powsybl/cgmes/rdfdb/{VariantUpdater,VariantBulkLoader,VariantRequest,VariantLoadResult,RdfDbVariantLoadOptions}.java`, `RdfDbNetworkLoader.loadVariants`; tests `RdfDbVariantFlowTest`, `RdfDbVariantBulkLoadTest`, `RdfDbVariantExportTest`, `RdfDbVariantsBenchmarkTest` | `feat/diffstacking` / `c8c7f57f0f` | 2026-09-21 |
+
+## Unified mapping proposal (`model/proposals/unified-mapping.c4`)
+
+The elements of the proposal exist on the powsybl-core branch `feat/diffstacking-unified-mapping` (worktree
+`scratchpad/worktrees/powsybl-core-unified`), not upstream. "Before" is the start of the rework, `bb9cb0eb85`; "after"
+is `p4-merged` = `20ce552c50` (identical in main code to the P5 head, which adds a test and the documentation page).
+
+| FQN | Repository | Source path(s) | Branch/commit reviewed | Last checked |
+| --- | --- | --- | --- | --- |
+| `proposed_unified_mapping.before_ssh_writers` | powsybl-core | `cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/export/SteadyStateHypothesisExport.java` | `feat/diffstacking-unified-mapping` / `bb9cb0eb85` | 2026-10-01 |
+| `proposed_unified_mapping.before_probes` | powsybl-core | `cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/diff/{DiffProbes,DiffSubjectResolver}.java`, `.../export/{CgmesObjectDump,CgmesLimitIndex}.java` | `feat/diffstacking-unified-mapping` / `bb9cb0eb85` | 2026-10-01 |
+| `proposed_unified_mapping.families` | powsybl-core | `cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/export/{AbstractFamily,SwitchAndTerminalFamily,LoadFamily,MachineFamily,TapChangerAndShuntFamily,RegulatingControlFamily,HvdcFamily,ControlAreaFamily,LimitFamily}.java` | `feat/diffstacking-unified-mapping` / `20ce552c50` | 2026-10-01 |
+| `proposed_unified_mapping.plain_rows` | powsybl-core | `cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/mapping/{Block,PlainFamily,PlainRow,Quantity,LoadRows}.java` | `feat/diffstacking-unified-mapping` / `20ce552c50` | 2026-10-01 |
+| `proposed_unified_mapping.property_sink` | powsybl-core | `cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/export/{CgmesPropertySink,CgmesPropertyBuffer}.java` | `feat/diffstacking-unified-mapping` / `20ce552c50` | 2026-10-01 |
+| `proposed_unified_mapping.refusal` | powsybl-core | `cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/export/{Refusal,RegulationKeyRefusals}.java` | `feat/diffstacking-unified-mapping` / `20ce552c50` | 2026-10-01 |
+| `proposed_unified_mapping.subject_index` | powsybl-core | `cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/export/Families.java` | `feat/diffstacking-unified-mapping` / `20ce552c50` | 2026-10-01 |
+| `proposed_unified_mapping.mapping_page` | powsybl-core | `docs/grid_exchange_formats/cgmes/mapping.md`, `cgmes/cgmes-conversion/src/test/java/com/powsybl/cgmes/conversion/export/MappingPageTest.java` | `feat/diffstacking-unified-mapping-p5` | 2026-10-01 |
+
+Figures of `scratchpad/probes/count20/count.sh` (statements of a rule: lines of main code, comments removed, that
+state it; code lines without import/package; types incl. nested), before = `bb9cb0eb85`
+(`scratchpad/reports/20-P0-count-base.txt`), after = the P5 head against an archive of `bb9cb0eb85`
+(`scratchpad/reports/20-p5-count.txt`); the phase figures in `scratchpad/reports/20-slices-decision.md`, `20-p1.md`,
+`20-p2.md`, `20-p4.md`.
+
+| Rule | Statements before | after |
+| --- | ---: | ---: |
+| `EnergyConsumer.p` (plain SSH value) | 13 (8 files) | 4 (3 files) |
+| generator p/q sign | 19 (5 files) | 12 (5 files) |
+| regulating terminal sign | 14 | 14 |
+| unit multiplier literal | 5 (2 files) | 5 (1 file: `Quantity`) |
+| local or remote target | 5 | 5 |
+| **sum of the five rules** | **56** | **40** |
+| `RegulatingControl.targetValue` | 6 | 5 |
+| `RegulatingControl.enabled` | 6 | 5 |
+| `TapChanger.step` | 14 | 11 |
+| `VsConverter.targetQpcc` | 9 | 4 |
+| `EquivalentInjection.regulationTarget` | 7 | 6 |
+| `Switch.open` | 8 | 5 |
+
+| Size (cgmes-model + cgmes-conversion main code) | before | after | delta |
+| --- | ---: | ---: | ---: |
+| code lines without import/package | 27 253 | 27 442 | +189 (+0.7 %) |
+| top-level types | 213 | 225 | +12 |
+| named types incl. nested | 338 | 355 | +17 |
+| methods | 3 062 | 3 139 | +77 |
+
+What the figures say: every rule that was stated in more than one path is stated fewer times or as often (the
+regulating terminal sign and the local/remote decision stay where the importer states them), the full SSH export and
+the change exports no longer state any rule themselves, and the rework does not reduce the number of types or lines
+(the "OUR FILES" figures of the reports are not comparable across phases: from P1 on they count the family classes).
+The importer's update states its own rules except for loads, control areas and switches (P4); the rules stated in the
+SPARQL update catalogue are counted as statements.
