@@ -114,8 +114,9 @@ state it; code lines without import/package; types incl. nested), before = `bb9c
 | methods | 3 062 | 3 139 | +77 |
 
 What the figures say: every rule that was stated in more than one path is stated fewer times or as often (the
-regulating terminal sign and the local/remote decision stay where the importer states them), the full SSH export and
-the change exports no longer state any rule themselves, and the rework does not reduce the number of types or lines
+regulating terminal sign and the local/remote decision stay where the importer states them), the full SSH export
+states none of the eleven rules any more and the change dispatch (`CgmesChangeTranslator`) two (one line each for
+`EnergyConsumer.p` and `Switch.open`, the keys it dispatches by), and the rework does not reduce the number of types or lines
 (the "OUR FILES" figures of the reports are not comparable across phases: from P1 on they count the family classes).
 The importer's update states its own rules except for loads, control areas and switches (P4); the rules stated in the
 SPARQL update catalogue are counted as statements.
