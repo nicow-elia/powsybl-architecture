@@ -3,7 +3,7 @@
 // SteadyStateHypothesisExport, which the unified mapping proposal rewrites (model/proposals/unified-mapping/mapping.c4).
 model {
   extend powsybl_core.cgmes {
-    query_catalog = component 'SPARQL query catalogue (CIM16.sparql)' 'The named queries of cgmes-model: one per CIM class and purpose, for instance synchronousMachinesForUpdate, read by the conversion through CgmesModel.' {
+    query_catalog = component 'SPARQL query catalogue (CIM16.sparql, CIM16-update.sparql)' 'The named queries of cgmes-model: one per CIM class and purpose, for instance synchronousMachinesForUpdate (in CIM16-update.sparql), read by the conversion through CgmesModel.' {
       link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/import.html
     }
     conversion = component 'Conversion' 'The CGMES import: converts the equipment profile into a Network, then runs the update of the SSH and SV profiles on it (updateWithAllInputs).' {

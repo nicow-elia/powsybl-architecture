@@ -1,6 +1,7 @@
 // Three document views of the unified IIDM <-> CGMES mapping: upstream main as it is, the families after the rework,
 // and one change of a generator's active power through both directions. Light fills with dark text (doc_* colours of
-// 00-specification.c4); red marks the code that states the rule RotatingMachine.p = -targetP itself.
+// 00-specification.c4): grey = upstream main only, blue = proposal (local branches, not upstream); red marks upstream
+// code that states the rule RotatingMachine.p = -targetP itself, a darker blue marks proposal code that does.
 views 'Unified mapping: proposal' {
 
   view upstream-main-today {
@@ -18,7 +19,7 @@ views 'Unified mapping: proposal' {
       description 'Holds the instance files as RDF'
     }
     include powsybl_core.cgmes.query_catalog with {
-      title 'SPARQL catalogue (CIM16.sparql)'
+      title 'SPARQL catalogue (CIM16*.sparql)'
       description 'Named queries, e.g. synchronousMachinesForUpdate'
     }
     include powsybl_core.cgmes.conversion with {
@@ -49,8 +50,12 @@ views 'Unified mapping: proposal' {
     include powsybl_core.cgmes.tp_sv_export with {
       description 'Own IIDM → CGMES rules for TP, SV'
     }
+    include unified_mapping_legend.unchanged with {
+      title 'Legend: powsybl-core, upstream'
+      description 'Every element of this view: upstream main f3d031b60f'
+    }
     include unified_mapping_legend.rule_stated with {
-      title 'Legend: rule stated here'
+      title 'Legend: upstream code stating the rule'
       description 'Code stating RotatingMachine.p = −targetP'
     }
 
@@ -75,7 +80,7 @@ views 'Unified mapping: proposal' {
 
   view families-after {
     title 'After the rework: eight families state the mapping once'
-    description 'powsybl-core branch feat/diffstacking-unified-mapping at tag rework-end (8d6fc2e860). The import front end is unchanged. The SSH side of the mapping lives in eight family classes, one describe function per CGMES class, with plain rows and Quantity for the purely tabular values (loads, control areas). Every family writes into a CgmesPropertySink: the XML writer of the full SSH export, or the buffer of one change for the partial SSH, the difference model and the RDF database. The in-place import of a difference reads the same families: the subject index, the blocks and the capability table derived from them, and mapping.md is generated from them. Honestly: the importer still states the machine rule itself, in SynchronousMachineConversion.update (unchanged upstream code); loads, control areas and switches it reads through the rows.'
+    description 'powsybl-core branch feat/diffstacking-unified-mapping at tag rework-end (8d6fc2e860). The import front end is unchanged. The SSH side of the mapping lives in eight family classes, one describe function per CGMES class, with plain rows and Quantity for the purely tabular values (loads, control areas). Every family writes into a CgmesPropertySink: the XML writer of the full SSH export, or the buffer of one change for the partial SSH, the difference model and the RDF database. The in-place import of a difference reads the same families: the subject index, the blocks and the capability table derived from them, and mapping.md is generated from them. Grey is upstream main, blue the proposal (local branches, not upstream). Honestly: the importer still states the machine rule itself, in SynchronousMachineConversion.update (unchanged upstream code); loads, control areas and switches it reads through the rows.'
 
     // Import front end, unchanged
     include powsybl_core.iidm.io.exchange_formats.cgmes with {
@@ -89,7 +94,7 @@ views 'Unified mapping: proposal' {
       description 'Holds the instance files as RDF'
     }
     include powsybl_core.cgmes.query_catalog with {
-      title 'SPARQL catalogue (CIM16.sparql)'
+      title 'SPARQL catalogue (CIM16*.sparql)'
       description 'Named queries, unchanged'
     }
     include powsybl_core.cgmes.conversion with {
@@ -97,8 +102,8 @@ views 'Unified mapping: proposal' {
       description 'Full import, unchanged'
     }
     include powsybl_core.cgmes.conversion_update with {
-      title 'Conversion.update'
-      description 'SSH update, scoped to the touched objects'
+      title 'Conversion.update + UpdateScope'
+      description 'Upstream SSH update; the scope to the touched objects is proposed'
     }
     include powsybl_core.cgmes.element_conversions with {
       title 'elements/*Conversion'
@@ -173,21 +178,25 @@ views 'Unified mapping: proposal' {
       description 'MappingPageTest fails when stale'
     }
 
-    include unified_mapping_legend.rule_stated with {
-      title 'Legend: rule stated here'
-      description 'Code stating RotatingMachine.p = −targetP'
-    }
     include unified_mapping_legend.unchanged with {
-      title 'Legend: upstream code, unchanged'
-      description 'Import front end'
+      title 'Legend: powsybl-core, upstream'
+      description 'Upstream main, unchanged: import front end'
     }
     include unified_mapping_legend.reworked with {
-      title 'Legend: new or reworked'
-      description 'Mapping, consumers, derived artefacts'
+      title 'Legend: proposal'
+      description 'Local branch, not upstream: mapping, consumers, derived artefacts'
+    }
+    include unified_mapping_legend.rule_stated with {
+      title 'Legend: upstream code stating the rule'
+      description 'Code stating RotatingMachine.p = −targetP'
+    }
+    include unified_mapping_legend.rule_stated_proposal with {
+      title 'Legend: proposal code stating the rule'
+      description 'Darker blue: the families state each rule once'
     }
 
     exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.io, powsybl_core.iidm.io.exchange_formats,
-      powsybl_core.iidm.io.import_providers, powsybl_core.cgmes, proposed_diffstacking.cgmes_rdfdb,
+      powsybl_core.iidm.io.import_providers, powsybl_core.cgmes, proposed_diffstacking, proposed_diffstacking.cgmes_rdfdb,
       proposed_unified_mapping, unified_mapping_legend
     exclude powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.iidm.network
     exclude powsybl_core.cgmes.conversion_update -> powsybl_core.iidm.network
@@ -214,19 +223,22 @@ views 'Unified mapping: proposal' {
     }
     style powsybl_core.iidm.io.exchange_formats.cgmes, powsybl_core.iidm.io.import_providers.cgmes_importer,
       powsybl_core.cgmes.triple_store, powsybl_core.cgmes.query_catalog, powsybl_core.cgmes.conversion,
-      powsybl_core.cgmes.conversion_update, powsybl_core.iidm.network, unified_mapping_legend.unchanged {
+      powsybl_core.iidm.network, unified_mapping_legend.unchanged {
       color doc_unchanged
     }
-    style proposed_unified_mapping.families, proposed_unified_mapping.families.*, proposed_unified_mapping.plain_rows,
-      powsybl_core.cgmes.element_conversions, unified_mapping_legend.rule_stated {
+    style powsybl_core.cgmes.element_conversions, unified_mapping_legend.rule_stated {
       color doc_rule
+    }
+    style proposed_unified_mapping.families, proposed_unified_mapping.families.*, proposed_unified_mapping.plain_rows,
+      unified_mapping_legend.rule_stated_proposal {
+      color doc_rule_proposal
     }
     autoLayout TopBottom 60 40
   }
 
   dynamic view machine-example {
     title 'One change of a generator\'s active power, both directions'
-    description 'Export (steps 1-8): Generator G.setTargetP(100) is recorded; CgmesChangeTranslator dispatches it by key to MachineFamily, whose describeSynchronousMachine writes RotatingMachine.p = -100 into a CgmesPropertySink; the same function writes the full SSH. Import (steps 9-16): a difference stating RotatingMachine.p = -120 is planned by FastRoutePlan, resolved by Families.resolve, completed to the SynchronousMachine block of MachineFamily, and applied by the unchanged Conversion.update, where SynchronousMachineConversion.update states targetP = -p again.'
+    description 'Export (steps 1-8): Generator G.setTargetP(100) is recorded; CgmesChangeTranslator dispatches it by key to MachineFamily, whose describeSynchronousMachine writes RotatingMachine.p = -100 into a CgmesPropertySink; the same function writes the full SSH. Import (steps 9-16): a difference stating RotatingMachine.p = -120 is planned by FastRoutePlan, resolved by Families.resolve, completed to the SynchronousMachine block of MachineFamily, and applied by the unchanged Conversion.update, where SynchronousMachineConversion.update states targetP = -p again. Grey is upstream main, blue the proposal (local branches, not upstream).'
     include powsybl_core.iidm.network with { title 'IIDM Network'; description 'Generator G, targetP' }
     include powsybl_core.iidm.variants.network_event_recorder with { title 'NetworkEventRecorder'; description 'Records the change as an event' }
     include proposed_diffstacking.change_translator with { title 'CgmesChangeTranslator'; description 'Dispatches a change by key' }
@@ -239,9 +251,12 @@ views 'Unified mapping: proposal' {
     include proposed_diffstacking.cgmes_diff_import with { title 'CgmesDiffImport'; description 'In-place import of a difference' }
     include proposed_unified_mapping.fast_route_plan with { description 'Resolves, checks, completes every subject' }
     include proposed_unified_mapping.subject_index with { title 'Families.resolve'; description 'CGMES id to network object, class' }
-    include powsybl_core.cgmes.conversion_update with { title 'Conversion.update'; description 'Upstream SSH update, unchanged' }
+    include powsybl_core.cgmes.conversion_update with { title 'Conversion.update + UpdateScope'; description 'Upstream SSH update, run with a proposed scope' }
     include powsybl_core.cgmes.element_conversions with { title 'SynchronousMachineConversion'; description 'update(): targetP = −p, upstream code' }
-    include unified_mapping_legend.rule_stated with { title 'Legend: rule stated here'; description 'Code stating RotatingMachine.p = −targetP' }
+    include unified_mapping_legend.unchanged with { title 'Legend: powsybl-core, upstream'; description 'Upstream main, unchanged' }
+    include unified_mapping_legend.reworked with { title 'Legend: proposal'; description 'Local branch, not upstream' }
+    include unified_mapping_legend.rule_stated with { title 'Legend: upstream code stating the rule'; description 'Code stating RotatingMachine.p = −targetP' }
+    include unified_mapping_legend.rule_stated_proposal with { title 'Legend: proposal code stating the rule'; description 'Darker blue: stated once, in MachineFamily' }
 
     // Export of the change
     powsybl_core.iidm.network -> powsybl_core.iidm.variants.network_event_recorder 'G.setTargetP(100): event targetP'
@@ -272,11 +287,14 @@ views 'Unified mapping: proposal' {
       textSize lg
     }
     autoLayout TopBottom 60 40
-    style powsybl_core.iidm.network, powsybl_core.iidm.variants.network_event_recorder, powsybl_core.cgmes.conversion_update {
+    style powsybl_core.iidm.network, powsybl_core.iidm.variants.network_event_recorder, unified_mapping_legend.unchanged {
       color doc_unchanged
     }
-    style proposed_unified_mapping.families.machine_family, powsybl_core.cgmes.element_conversions, unified_mapping_legend.rule_stated {
+    style powsybl_core.cgmes.element_conversions, unified_mapping_legend.rule_stated {
       color doc_rule
+    }
+    style proposed_unified_mapping.families.machine_family, unified_mapping_legend.rule_stated_proposal {
+      color doc_rule_proposal
     }
   }
 }

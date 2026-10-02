@@ -1,5 +1,6 @@
 // The RDF database / model registry next to powsybl-core, under the proposal that the registry (today cgmes-rdfdb)
-// becomes a repository of its own. Light fills with dark text (doc_* colours of 00-specification.c4). Figures on the
+// becomes a repository of its own. Light fills with dark text (doc_* colours of 00-specification.c4): grey = upstream
+// main only, blue = proposal (the registry and the powsybl-core parts that exist only on local branches). Figures on the
 // edges are medians of scratchpad/reports/16-benchmark-campaign.md §0 and 21-benchmarks.md (IGM = sv6 replica,
 // 21 k terminals; sv20 = 70 k terminals): putAsDiff day ≈ 53 s IGM Fuseki (16 §0); rich timestep 868 ms memory /
 // 1 145 ms Fuseki at sv20 (16 §0); cold DB load 2.1–2.3 s IGM Fuseki (16 §0); diff route = update at depth 50, 93 ms
@@ -9,7 +10,7 @@ views 'RDF database integration: proposal' {
 
   view rdfdb-integration {
     title 'Model registry in its own repository, next to powsybl-core'
-    description 'powsybl-core keeps the IIDM network, the CGMES conversion (families + sink), the in-place import of a difference, the NetworkEventRecorder and the thin triple store over a SPARQL endpoint. The model registry (today cgmes-rdfdb) moves to a repository of its own: the catalogue addressed by (scenario, timestep, version), the version graph and checkpoints, the loader with its diff and full routes, and the ingest of a day. The store is any SPARQL 1.1 + Graph Store Protocol endpoint (e.g. Fuseki) or the in-process memory: backend. Three flows: a TSO ingests 96 SSH timesteps as differences, a study tool loads (scenario, 08:30, v1.1) by the diff route into a variant, an operator writes a change back as a new version. One scenario per ModelingAuthoritySet is proposed, not implemented.'
+    description 'Of the powsybl-core side, only the IIDM network and the NetworkEventRecorder exist upstream (grey); the families and sink, the in-place import of a difference and the thin triple store over a SPARQL endpoint are proposed for powsybl-core and exist only on local branches (blue). The model registry (today cgmes-rdfdb) moves to a repository of its own: the catalogue addressed by (scenario, timestep, version), the version graph and checkpoints, the loader with its diff and full routes, and the ingest of a day. The store is any SPARQL 1.1 + Graph Store Protocol endpoint (e.g. Fuseki) or the in-process memory: backend. Three flows: a TSO ingests 96 SSH timesteps as differences, a study tool loads (scenario, 08:30, v1.1) by the diff route into a variant, an operator writes a change back as a new version. One scenario per ModelingAuthoritySet is proposed, not implemented.'
 
     group 'Actors' {
       color gray
@@ -19,24 +20,29 @@ views 'RDF database integration: proposal' {
       include rdfdb_integration_operator with { description 'Edits a variant, writes it back' }
     }
 
-    group 'powsybl-core (upstream)' {
+    group 'powsybl-core, upstream' {
       color gray
       opacity 8%
       include powsybl_core.iidm.network with {
         title 'IIDM Network'
         description 'Variants: one per snapshot'
       }
+      include powsybl_core.iidm.variants.network_event_recorder with {
+        title 'NetworkEventRecorder'
+        description 'Change log of a network'
+      }
+    }
+
+    group 'powsybl-core, proposed (local branches, not upstream)' {
+      color blue
+      opacity 8%
       include proposed_unified_mapping.families with {
         title 'CGMES import / export'
-        description 'Conversion, families + sink, CgmesDiffExport'
+        description 'Conversion (upstream) + families, sink, CgmesDiffExport (proposed)'
       }
       include proposed_diffstacking.cgmes_diff_import with {
         title 'CgmesDiffImport'
         description 'Applies a difference in place'
-      }
-      include powsybl_core.iidm.variants.network_event_recorder with {
-        title 'NetworkEventRecorder'
-        description 'Change log of a network'
       }
       include proposed_diffstacking.triple_store_sparql with {
         title 'triple-store-impl-rdf4j-sparql'
@@ -81,13 +87,13 @@ views 'RDF database integration: proposal' {
     group 'Legend' {
       color gray
       opacity 0%
-      include rdfdb_integration_legend.core with { title 'Grey: powsybl-core'; description 'Stays upstream' }
-      include rdfdb_integration_legend.registry with { title 'Blue: model registry'; description 'Separate repository' }
+      include rdfdb_integration_legend.core with { title 'Grey: powsybl-core, upstream'; description 'Exists on upstream main' }
+      include rdfdb_integration_legend.registry with { title 'Blue: proposal'; description 'Local branches, not upstream; registry: separate repository' }
       include rdfdb_integration_legend.store with { title 'Green: RDF store'; description 'Any SPARQL 1.1 + GSP endpoint' }
-      include rdfdb_integration_legend.proposed with { title 'Dashed: proposed'; description 'Not implemented' }
+      include rdfdb_integration_legend.proposed with { title 'Dashed: not implemented'; description 'Proposed design, no code yet' }
     }
 
-    exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.variants, powsybl_core.cgmes, proposed_diffstacking.cgmes_rdfdb,
+    exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.variants, powsybl_core.cgmes, proposed_diffstacking, proposed_diffstacking.cgmes_rdfdb,
       proposed_unified_mapping, rdfdb_integration_legend
     exclude * -> *
 
@@ -123,7 +129,9 @@ views 'RDF database integration: proposal' {
       color doc_unchanged
       textSize lg
     }
-    style proposed_diffstacking.cgmes_rdfdb.*, proposed_rdfdb_scenario_per_mas, rdfdb_integration_legend.registry {
+    style proposed_diffstacking.cgmes_rdfdb.*, proposed_rdfdb_scenario_per_mas, rdfdb_integration_legend.registry,
+      proposed_unified_mapping.families, proposed_diffstacking.cgmes_diff_import, proposed_diffstacking.triple_store_sparql,
+      rdfdb_integration_legend.proposed {
       color doc_reworked
     }
     style proposed_diffstacking_rdf_database, proposed_diffstacking_rdf_database.*, rdfdb_integration_legend.store {

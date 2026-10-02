@@ -1,7 +1,8 @@
 // Proposal: the model registry (today the module cgmes-rdfdb of the diffstacking branch) lives in a repository of its
 // own, e.g. powsybl-cgmes-registry (reports/20-final-report.md §6, slice S11: "cgmes-rdfdb (own repository proposal,
 // 5 PRs)"). powsybl-core keeps the network, the CGMES conversion, the in-place import of a difference and the thin
-// triple store over a SPARQL endpoint (slice S10). The registry elements reuse the ids of cgmes-rdfdb; only their
+// triple store over a SPARQL endpoint (slice S10). The registry elements are those of cgmes-rdfdb in the diffstacking
+// proposal (proposed_diffstacking.cgmes_rdfdb.*, model/proposals/diffstacking/cgmes-rdfdb.c4); only their
 // repository changes. The actors and the scenario-per-authority element are new; the latter is proposed, not code.
 model {
   rdfdb_integration_tso = component 'TSO' 'Exports a day as instance files: the base model, then 96 sets of SSH files, one per quarter hour.'
@@ -37,8 +38,8 @@ model {
 // Legend elements of the RDF database integration view: they stand for no code.
 model {
   rdfdb_integration_legend = module 'Legend' {
-    core = component 'powsybl-core' 'Stays upstream'
-    registry = component 'Model registry' 'Separate repository'
+    core = component 'powsybl-core, upstream' 'Exists on upstream main'
+    registry = component 'Proposal' 'Local branches, not upstream; the model registry as a separate repository'
     store = component 'RDF store' 'Any SPARQL 1.1 + GSP endpoint'
     proposed = component 'Proposed' 'Dashed: not implemented'
   }

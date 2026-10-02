@@ -64,8 +64,9 @@ model {
 // Legend elements of the unified mapping views: they stand for no code.
 model {
   unified_mapping_legend = module 'Legend' {
-    rule_stated = component 'Rule stated here' 'Code that writes RotatingMachine.p = -targetP itself'
-    unchanged = component 'Upstream code, unchanged' 'Exists on upstream main as it is'
-    reworked = component 'New or reworked by the proposal' 'Branch feat/diffstacking-unified-mapping, rework-end'
+    rule_stated = component 'Upstream code stating the rule' 'Upstream code that writes RotatingMachine.p = -targetP (or its inverse) itself'
+    rule_stated_proposal = component 'Proposal code stating the rule' 'Proposal code that writes RotatingMachine.p = -targetP itself'
+    unchanged = component 'powsybl-core, upstream' 'Exists on upstream main (f3d031b60f) as it is'
+    reworked = component 'Proposal' 'New or reworked code of a local branch (feat/diffstacking, feat/diffstacking-unified-mapping), not upstream'
   }
 }

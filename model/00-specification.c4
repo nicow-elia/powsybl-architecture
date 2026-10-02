@@ -16,5 +16,6 @@ specification {
   color doc_rule #F8C9C4
   color doc_unchanged #E5E7EB
   color doc_reworked #CDE4F7
+  color doc_rule_proposal #94BFE8
   color doc_output #D9F0D3
 }
