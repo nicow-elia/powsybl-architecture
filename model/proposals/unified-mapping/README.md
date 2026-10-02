@@ -6,8 +6,16 @@ the partial SSH, the difference model and the RDF database); the in-place import
 families. The views compare upstream main, the diffstacking branch before the rework and the families after it, and
 follow one change of a generator's active power through both directions.
 
-**Status:** as-is-branch – the "after" elements exist on the powsybl-core branch `feat/diffstacking-unified-mapping`
-(`p4-merged` = `20ce552c50`), not upstream; "before" is `bb9cb0eb85`.
+**Status:** as-is-branch – the "after" elements exist on the local powsybl-core branch
+`feat/diffstacking-unified-mapping` (`p4-merged` = `20ce552c50`), not upstream; "before" is `bb9cb0eb85`. Both build on
+the diffstacking proposal ([../diffstacking/README.md](../diffstacking/README.md)): the change exports, the difference
+model import and the RDF sink they connect are `proposed_diffstacking.*` elements, not upstream ones.
+
+**Colours of the document views.** Grey is upstream main only (`upstream-main-today` holds nothing else; every element
+was checked against `f3d031b60f`). Blue is the proposal: families, plain rows, sink, refusal, `CgmesChangeTranslator`,
+the change exports, `CgmesDiffImport`, the RDF database sink, and the upstream `Conversion.update` where it runs with the
+proposed `UpdateScope`. Red marks upstream code that states the rule `RotatingMachine.p = -targetP` itself, a darker
+blue (`doc_rule_proposal`) proposal code that does.
 
 | | |
 | --- | --- |

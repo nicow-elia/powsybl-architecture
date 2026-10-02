@@ -86,7 +86,7 @@
   <body>
     <main>
       <h1>Powsybl Architecture</h1>
-      <p>Factual views document the checked-out codebase. Proposal views describe a target architecture that is not yet implemented.</p>
+      <p>As-is views show only what exists on the upstream main branches of powsybl-core, pypowsybl and powsybl-open-loadflow. Proposal views show a target architecture, or code that exists only on a branch and not upstream.</p>
       <nav aria-label="Architecture diagrams">
         <h2>As-is codebase</h2>
         <a href="./app/#/project/powsybl-architecture/view/index/">As-is: Powsybl integration</a>
@@ -95,7 +95,7 @@
         <a href="./app/#/project/powsybl-architecture/view/analysis_configuration_and_result_selection/">As-is: Analysis configuration and result selection</a>
         <a href="./app/#/project/powsybl-architecture/view/core_repository_structure/">As-is: powsybl-core</a>
         <a href="./app/#/project/powsybl-architecture/view/open_loadflow_components/">As-is: powsybl-open-loadflow</a>
-        <a href="./app/#/project/powsybl-architecture/view/fast_restart_and_network_cache/">As-is: Open Load Flow fast restart and NetworkCache</a>
+        <a href="./app/#/project/powsybl-architecture/view/fast_restart_and_network_cache/">As-is: Open Load Flow fast restart and NetworkCache (AC, main)</a>
         <a href="./app/#/project/powsybl-architecture/view/solver_and_outer_loop_pipeline/">As-is: Open Load Flow solver and outer-loop pipeline</a>
         <a href="./app/#/project/powsybl-architecture/view/pypowsybl_binding_layers/">As-is: pypowsybl</a>
         <a href="./app/#/project/powsybl-architecture/view/capability_and_provider_bundle/">As-is: pypowsybl capability and provider bundle</a>
@@ -103,13 +103,23 @@
         <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_a/">Proposed: State Estimation Proposal A</a>
         <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_b/">Proposed: State Estimation Proposal B (powsybl-open-simulator refactor)</a>
         <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposed_contracts/">Proposed: State Estimation and OpenSteadyState contracts</a>
-        <a href="./app/#/project/powsybl-architecture/view/upstream-main-today/">Unified mapping: powsybl-core main today</a>
-        <a href="./app/#/project/powsybl-architecture/view/families-after/">Unified mapping: after the family rework</a>
-        <a href="./app/#/project/powsybl-architecture/view/machine-example/">Unified mapping: one generator change end to end</a>
-        <a href="./app/#/project/powsybl-architecture/view/unified_mapping_before/">Unified mapping: before (change exports with own rules)</a>
-        <a href="./app/#/project/powsybl-architecture/view/unified_mapping_after/">Unified mapping: after (families, sink, consumers)</a>
+        <a href="./app/#/project/powsybl-architecture/view/upstream-main-today/">As-is context: powsybl-core upstream main today (CGMES mapping)</a>
+        <a href="./app/#/project/powsybl-architecture/view/families-after/">Proposed: unified mapping after the family rework</a>
+        <a href="./app/#/project/powsybl-architecture/view/machine-example/">Proposed: unified mapping, one generator change end to end</a>
+        <a href="./app/#/project/powsybl-architecture/view/unified_mapping_before/">Proposed: unified mapping, before (change exports with own rules)</a>
+        <a href="./app/#/project/powsybl-architecture/view/unified_mapping_after/">Proposed: unified mapping, after (families, sink, consumers)</a>
         <a href="./app/#/project/powsybl-architecture/view/rdfdb-integration/">Proposed: model registry as a separate repository</a>
+        <h2>Proposed: diffstacking (local branch feat/vibestacker, not upstream)</h2>
+        <a href="./app/#/project/powsybl-architecture/view/cgmes_change_export/">Proposed: CGMES change export (partial SSH, difference models)</a>
+        <a href="./app/#/project/powsybl-architecture/view/cgmes_diff_import/">Proposed: CGMES difference model import in place</a>
+        <a href="./app/#/project/powsybl-architecture/view/cgmes_loading_split/">Proposed: CGMES loading through an RDF database</a>
+        <a href="./app/#/project/powsybl-architecture/view/pypowsybl_change_export/">Proposed: pypowsybl change recording and export</a>
+        <a href="./app/#/project/powsybl-architecture/view/pypowsybl_rdf_database/">Proposed: pypowsybl RDF database</a>
+        <a href="./app/#/project/powsybl-architecture/view/diffstacking_ipc/">Proposed: diffstacking IPC through the RDF database</a>
         <a href="./app/#/project/powsybl-architecture/view/diffstacking_slow_route/">Proposed: diffstacking slow route</a>
+        <h2>Proposed: Open Load Flow pull-request branches (not on main)</h2>
+        <a href="./app/#/project/powsybl-architecture/view/olf_branch_network_cache/">Proposed: generic AC/DC NetworkCache (dc_lf_network_cache)</a>
+        <a href="./app/#/project/powsybl-architecture/view/olf_branch_monitored_result_filter/">Proposed: monitored-result delta filter (filter-monitored-results)</a>
       </nav>
     </main>
   </body>
