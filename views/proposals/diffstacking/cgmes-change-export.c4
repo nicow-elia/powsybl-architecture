@@ -1,4 +1,4 @@
-views 'powsybl-core' {
+views 'Diffstacking: proposal' {
   view cgmes_change_export {
     title 'CGMES change export: partial SSH and difference models'
     description 'A NetworkEventRecorder collects what a business process changed on an IIDM Network. Both CGMES change exports translate that log with the same mapping: PartialSshExport writes the new state as a partial SSH instance file, CgmesDiffExport writes the new and the previous state as an IEC 61970-552 difference model per profile - EQ and SSH models: operational limits, voltage level limits and branch impedances are equipment values a partial SSH file cannot carry - which a DifferenceSink then stores.'
@@ -11,16 +11,17 @@ views 'powsybl-core' {
     include powsybl_core.iidm.io
     include powsybl_core.iidm.io.exchange_formats
     include powsybl_core.iidm.io.exchange_formats.cgmes
-    include powsybl_core.iidm.io.exchange_formats.difference_model_format
+    include proposed_diffstacking.difference_model_format
     include powsybl_core.iidm.io.import_providers
     include powsybl_core.iidm.io.import_providers.cgmes_importer
     include powsybl_core.cgmes
+    include proposed_diffstacking
     include powsybl_core.cgmes.triple_store
     include powsybl_core.cgmes.cgmes_model
-    include powsybl_core.cgmes.difference_model
-    include powsybl_core.cgmes.partial_ssh_export
-    include powsybl_core.cgmes.cgmes_diff_export
-    include powsybl_core.cgmes.change_translator
-    include powsybl_core.cgmes.difference_sink
+    include proposed_diffstacking.difference_model
+    include proposed_diffstacking.partial_ssh_export
+    include proposed_diffstacking.cgmes_diff_export
+    include proposed_diffstacking.change_translator
+    include proposed_diffstacking.difference_sink
   }
 }

@@ -10,28 +10,28 @@ model {
 
   proposed_rdfdb_scenario_per_mas = component 'One scenario per ModelingAuthoritySet (proposed)' 'Model management per modelling authority: each TSO model is a scenario of its own, and a multi-TSO CGM is a set of such scenarios plus the boundary. Not implemented; today a scenario is one base grid model (one day).'
 
-  extend rdf_database {
+  extend proposed_diffstacking_rdf_database {
     store_meta_graph = model 'Metadata graph per scenario' 'http://powsybl.org/rdfdb/<scenario>/meta: the catalogue, mutable and small.'
     store_data_graphs = model 'Immutable data graphs' '.../graph/<model id>: one graph per uploaded CGMES file, written once.'
     store_diff_graphs = model 'Forward / reverse diff graphs' '.../graph/<model id>/forward and /reverse: what a difference sets and what it replaced.'
     store_checkpoint_copies = model 'Checkpoint copies' '.../materialized/...: a diff chain folded once on the server, an extra full starting point.'
   }
 
-  rdfdb_integration_tso -> powsybl_core.cgmes.rdfdb.snapshot_catalog 'putFull, then putAsDiff per timestep'
-  rdfdb_integration_study_tool -> powsybl_core.cgmes.rdfdb.rdf_db_network_loader 'load / update / loadVariants (scenario, timestep, version)'
+  rdfdb_integration_tso -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'putFull, then putAsDiff per timestep'
+  rdfdb_integration_study_tool -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader 'load / update / loadVariants (scenario, timestep, version)'
   rdfdb_integration_operator -> powsybl_core.iidm.network 'changes a variant'
-  proposed_rdfdb_scenario_per_mas -> powsybl_core.cgmes.rdfdb.snapshot_catalog 'would address one scenario per ModelingAuthoritySet'
+  proposed_rdfdb_scenario_per_mas -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'would address one scenario per ModelingAuthoritySet'
 
-  powsybl_core.cgmes.rdfdb.snapshot_catalog -> powsybl_core.triple_store_sparql 'guarded SPARQL UPDATE, GSP PUT of graphs'
-  powsybl_core.cgmes.rdfdb.version_graph -> powsybl_core.triple_store_sparql 'plan query; Checkpoint COPY on the server'
-  powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> proposed_unified_mapping.families 'full route: fetched graphs through the CGMES conversion'
+  proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.triple_store_sparql 'guarded SPARQL UPDATE, GSP PUT of graphs'
+  proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking.triple_store_sparql 'plan query; Checkpoint COPY on the server'
+  proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_unified_mapping.families 'full route: fetched graphs through the CGMES conversion'
   powsybl_core.iidm.variants.network_event_recorder -> proposed_unified_mapping.families 'change log, written as a difference model'
-  proposed_unified_mapping.families -> powsybl_core.cgmes.rdfdb.snapshot_catalog 'putDiff of the DifferenceModelSet (RdfDbExport)'
-  powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.iidm.network 'applies a difference in place, into a variant'
+  proposed_unified_mapping.families -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'putDiff of the DifferenceModelSet (RdfDbExport)'
+  proposed_diffstacking.cgmes_diff_import -> powsybl_core.iidm.network 'applies a difference in place, into a variant'
 
-  rdf_database.store_meta_graph -> rdf_database.store_data_graphs 'indexes'
-  rdf_database.store_meta_graph -> rdf_database.store_diff_graphs 'indexes'
-  rdf_database.store_checkpoint_copies -> rdf_database.store_diff_graphs 'folds'
+  proposed_diffstacking_rdf_database.store_meta_graph -> proposed_diffstacking_rdf_database.store_data_graphs 'indexes'
+  proposed_diffstacking_rdf_database.store_meta_graph -> proposed_diffstacking_rdf_database.store_diff_graphs 'indexes'
+  proposed_diffstacking_rdf_database.store_checkpoint_copies -> proposed_diffstacking_rdf_database.store_diff_graphs 'folds'
 }
 
 // Legend elements of the RDF database integration view: they stand for no code.

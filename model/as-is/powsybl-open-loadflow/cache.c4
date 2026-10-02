@@ -1,43 +1,26 @@
 model {
   extend powsybl_open_loadflow {
-    network_cache = component 'NetworkCache' 'NetworkListener-backed cache for incremental AC load-flow runs.' {
+    network_cache = component 'NetworkCache' 'NetworkListener-backed cache for incremental AC load-flow runs (AC only on main).' {
       link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/NetworkCache.html
       iidm_change_events = component 'IIDM NetworkListener changes' 'IIDM mutations notify the cache about changed equipment, parameters, and topology.' {
         link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/NetworkListener.html
       }
-      cache_input = component 'NetworkCache.LfInput' 'Captures load-flow and Open Load Flow parameters used to decide whether a cached entry remains valid.' {
-        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/NetworkCache.LfInput.html
-      }
       network_cache_entry = component 'NetworkCache.Entry' 'Owns the cache lifecycle, working variant cleanup, pause guard, and invalidation state for one IIDM Network.' {
         link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/NetworkCache.Entry.html
       }
-      ac_cache_value = component 'NetworkCache.AcLfValue' 'Holds the cached AC load-flow context and LfNetwork value.' {
-        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/NetworkCache.AcLfValue.html
-      }
-      dc_cache_value = component 'NetworkCache.DcLfValue' 'Holds the cached DC load-flow context and LfNetwork value.' {
-        link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/NetworkCache.DcLfValue.html
-      }
-      change_classifier = component 'Network and topology update classifier' 'Distinguishes network updates from topology updates so state reset can be limited.' {
+      change_classifier = component 'Cache update classification' 'Classifies every IIDM change (CacheUpdateStatus): an update the cache can apply in place marks the cached AC context as network-updated, an unsupported one invalidates the entry.' {
         link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/parameters.html
       }
       ac_fast_restart = engine 'AcLoadFlowFromCache' 'Reuses a cached AC computation network when the input is still compatible.' {
         link https://javadoc.io/doc/com.powsybl/powsybl-open-loadflow/latest/com/powsybl/openloadflow/AcLoadFlowFromCache.html
-      }
-      dc_fast_restart = engine 'DC cached load-flow execution' 'Reuses a cached DC computation network and avoids unnecessary state reset and voltage write-back.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/loadflow/parameters.html
       }
     }
   }
 
   powsybl_open_loadflow.network_cache -> powsybl_open_loadflow.lf_network 'reuses and invalidates'
   powsybl_open_loadflow.network_cache.iidm_change_events -> powsybl_open_loadflow.network_cache.network_cache_entry 'notifies'
-  powsybl_open_loadflow.network_cache.cache_input -> powsybl_open_loadflow.network_cache.network_cache_entry 'validates inputs for'
-  powsybl_open_loadflow.network_cache.network_cache_entry -> powsybl_open_loadflow.network_cache.ac_cache_value 'owns AC value'
-  powsybl_open_loadflow.network_cache.network_cache_entry -> powsybl_open_loadflow.network_cache.dc_cache_value 'owns DC value'
   powsybl_open_loadflow.network_cache.iidm_change_events -> powsybl_open_loadflow.network_cache.change_classifier 'classifies changes through'
-  powsybl_open_loadflow.network_cache.change_classifier -> powsybl_open_loadflow.network_cache.network_cache_entry 'marks cached values for update'
-  powsybl_open_loadflow.network_cache.ac_cache_value -> powsybl_open_loadflow.network_cache.ac_fast_restart 'reuses'
-  powsybl_open_loadflow.network_cache.dc_cache_value -> powsybl_open_loadflow.network_cache.dc_fast_restart 'reuses'
+  powsybl_open_loadflow.network_cache.change_classifier -> powsybl_open_loadflow.network_cache.network_cache_entry 'marks the cached context for update or invalidates'
+  powsybl_open_loadflow.network_cache.network_cache_entry -> powsybl_open_loadflow.network_cache.ac_fast_restart 'holds the AcLoadFlowContext reused by'
   powsybl_open_loadflow.network_cache.ac_fast_restart -> powsybl_open_loadflow.state_and_result_mapping 'writes completed AC state through'
-  powsybl_open_loadflow.network_cache.dc_fast_restart -> powsybl_open_loadflow.state_and_result_mapping 'writes completed DC state through'
 }

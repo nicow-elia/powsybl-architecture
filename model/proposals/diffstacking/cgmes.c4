@@ -1,0 +1,52 @@
+// Proposal: diffstacking - the CGMES change exports and the in-place import of a difference model. Implemented on the
+// local powsybl-core branch feat/vibestacker (feat/diffstacking), not upstream; see README.md of this folder.
+// Relations to upstream elements carry intent labels: "would extend" where the upstream element is changed on the
+// branch, "would consume as-is" where it is used unchanged.
+model {
+  proposed_diffstacking = module 'Diffstacking in powsybl-core (proposal)' 'The two exports that write recorded network changes instead of a whole model, the in-place import of a difference model, and the RDF database integration. Implemented on the local branch feat/vibestacker, not upstream.' {
+    difference_model = model 'DifferenceModelSet / CgmesStatement' 'Forward and reverse RDF statements per profile'
+    difference_model_format = format 'CGMES Difference Model' 'IEC 61970-552 difference model document, one per CGMES profile.'
+    partial_ssh_export = adapter 'PartialSshExport' 'Writes the objects affected by recorded changes as a partial SSH instance file.'
+    cgmes_diff_export = adapter 'CgmesDiffExport' 'Writes the same recorded changes as IEC 61970-552 difference models, one per profile.'
+    change_translator = component 'CgmesChangeTranslator + IidmStateView' 'Maps one recorded change to CGMES properties of the steady state hypothesis and of the equipment profile (operational limits, voltage level limits, branch impedances), against the current state or against the state the change log says preceded it.'
+    difference_sink = api 'DifferenceSink / DifferenceModelWriter' 'Where the difference models of one change set are handed over to: a document per profile, or a triple store.'
+
+    difference_model_parser = component 'DifferenceModelParser' 'Streaming reader of dm:DifferenceModel documents into statements, tolerant about every shape IEC 61970-552 leaves free.'
+    cgmes_diff_import = adapter 'CgmesDiffImport' 'Applies a difference model to a loaded network in place, decides beforehand whether that is possible, and undoes it again.'
+    fast_route_capabilities = component 'FastRouteCapabilities + DiffSubjectResolver' 'The declarative table of what the update workflow can read, and the resolution of difference model subjects to network objects and CIM classes.'
+    cgmes_object_dump = component 'CgmesObjectDump' 'What the change export would write about an object right now, used to complete consistency groups a minimal difference leaves out.'
+    diff_update_store = component 'DiffUpdateStoreBuilder' 'Writes the planned change as a synthetic partial SSH document into a fresh in-memory triple store.'
+    direct_eq_applier = component 'DirectEqApplier + CgmesLimitIndex' 'Applies EQ statements (impedances, voltage level limits) with IIDM setters; syncs CIM16 normal values'
+    triple_store_diff_applier = component 'TripleStoreDiffApplier' 'Replaces the property values a difference states inside one named graph, through SPARQL UPDATE only.'
+  }
+
+  powsybl_core.cgmes.cgmes_model -> proposed_diffstacking.difference_model 'would extend: defines the profiles and metadata of'
+
+  powsybl_core.iidm.variants.network_event_recorder -> proposed_diffstacking.partial_ssh_export 'would be consumed as-is: provides change log to'
+  powsybl_core.iidm.variants.network_event_recorder -> proposed_diffstacking.cgmes_diff_export 'would be consumed as-is: provides change log to'
+
+  proposed_diffstacking.partial_ssh_export -> proposed_diffstacking.change_translator 'map changes with'
+  proposed_diffstacking.cgmes_diff_export -> proposed_diffstacking.change_translator 'map changes with'
+  proposed_diffstacking.change_translator -> powsybl_core.iidm.network 'would consume as-is: reads current (and overlaid previous) state of'
+
+  proposed_diffstacking.cgmes_diff_export -> proposed_diffstacking.difference_model 'generates'
+  proposed_diffstacking.change_translator -> proposed_diffstacking.difference_model 'emits EQ statements for limits and impedances into'
+  proposed_diffstacking.difference_model -> proposed_diffstacking.difference_sink 'is pushed to'
+  proposed_diffstacking.difference_sink -> proposed_diffstacking.difference_model_format 'writes one file per profile'
+  proposed_diffstacking.partial_ssh_export -> powsybl_core.iidm.io.exchange_formats.cgmes 'would consume as-is: writes partial SSH'
+
+  powsybl_core.iidm.io.import_providers.cgmes_importer -> proposed_diffstacking.difference_model_parser 'would extend: detects difference model files with'
+  powsybl_core.iidm.io.import_providers.cgmes_importer -> proposed_diffstacking.cgmes_diff_import 'would extend: delegates difference models to'
+  proposed_diffstacking.difference_model_format -> proposed_diffstacking.difference_model_parser 'is read by'
+  proposed_diffstacking.difference_model_parser -> proposed_diffstacking.difference_model 'produces'
+  proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.fast_route_capabilities 'decides route with'
+  proposed_diffstacking.fast_route_capabilities -> powsybl_core.iidm.network 'would consume as-is: resolves subjects and types in'
+  proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.cgmes_object_dump 'completes groups / checks reverse values with'
+  proposed_diffstacking.cgmes_object_dump -> proposed_diffstacking.change_translator 'reuses export mapping of'
+  proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.diff_update_store 'builds synthetic SSH update store'
+  proposed_diffstacking.diff_update_store -> powsybl_core.cgmes.triple_store 'would consume as-is: writes into'
+  proposed_diffstacking.cgmes_diff_import -> powsybl_core.cgmes.conversion_update 'would extend: runs, scoped to the named equipment'
+  proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.direct_eq_applier 'applies EQ statements with'
+  proposed_diffstacking.direct_eq_applier -> powsybl_core.iidm.network 'would consume as-is: sets impedances and limits on'
+  proposed_diffstacking.triple_store_diff_applier -> powsybl_core.cgmes.triple_store 'would consume as-is: replaces property values in'
+}

@@ -1,26 +1,26 @@
-views 'Integration' {
+views 'Diffstacking: proposal' {
   view diffstacking_ipc {
     title 'Diffstacking IPC: Python clients exchanging grid states through the RDF database'
     description 'Two roles, one database. A writer holds a Network, records what it changes and stores the change as an addressable snapshot; a reader holds its own Network and walks to that snapshot, applying the stored differences in place when it can and rebuilding when it cannot. Both are ordinary pypowsybl processes - the roles are what a process does, not what it is, and the same object is usually both in turn. The database holds several days side by side as several scenarios, and every call names the one it means: a difference is always made against, and applied inside, one base grid model. Crossing to another day is therefore a reload, not a difference. What travels between the two processes is triples, never files: neither side parses CGMES again after the first upload.'
 
     include pypowsybl.python_api
     include pypowsybl.python_network
-    include pypowsybl.python_event_recorder
-    include pypowsybl.python_rdf_database
+    include proposed_diffstacking_pypowsybl.python_event_recorder
+    include proposed_diffstacking_pypowsybl.python_rdf_database
     include pypowsybl.pybind_extension
-    include pypowsybl.java_bindings.rdf_db_util
-    include powsybl_core.cgmes.rdfdb
-    include powsybl_core.cgmes.rdfdb.*
-    include powsybl_core.cgmes.cgmes_diff_export
-    include powsybl_core.cgmes.cgmes_diff_import
-    include rdf_database
+    include proposed_diffstacking_pypowsybl.rdf_db_util
+    include proposed_diffstacking.cgmes_rdfdb
+    include proposed_diffstacking.cgmes_rdfdb.*
+    include proposed_diffstacking.cgmes_diff_export
+    include proposed_diffstacking.cgmes_diff_import
+    include proposed_diffstacking_rdf_database
 
     autoLayout LeftRight
 
-    style pypowsybl.python_network, pypowsybl.python_event_recorder, pypowsybl.python_rdf_database {
+    style pypowsybl.python_network, proposed_diffstacking_pypowsybl.python_event_recorder, proposed_diffstacking_pypowsybl.python_rdf_database {
       color sky
     }
-    style rdf_database {
+    style proposed_diffstacking_rdf_database {
       color amber
     }
   }

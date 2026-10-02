@@ -51,7 +51,6 @@ model {
       limit_violation_evaluator = component 'Limit violation evaluation' 'Evaluates active loading limits and reductions for each calculated state.' {
         link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html
       }
-      monitored_result_filter = component 'Monitored-result delta filter' 'Omits unchanged monitored branch, bus, and transformer results from N-1 output.'
     }
   }
 
@@ -92,11 +91,7 @@ model {
   powsybl_open_loadflow.study_execution.pre_contingency_state -> powsybl_open_loadflow.study_execution.limit_violation_evaluator 'evaluates'
   powsybl_open_loadflow.study_execution.post_contingency_state -> powsybl_open_loadflow.study_execution.limit_violation_evaluator 'evaluates'
   powsybl_open_loadflow.study_execution.post_action_state -> powsybl_open_loadflow.study_execution.limit_violation_evaluator 'evaluates'
-  powsybl_open_loadflow.study_execution.pre_contingency_state -> powsybl_open_loadflow.study_execution.monitored_result_filter 'compares N results through'
-  powsybl_open_loadflow.study_execution.post_contingency_state -> powsybl_open_loadflow.study_execution.monitored_result_filter 'filters N-1 results through'
-  powsybl_open_loadflow.study_execution.post_action_state -> powsybl_open_loadflow.study_execution.monitored_result_filter 'filters post-action results through'
   powsybl_open_loadflow.study_execution.limit_violation_evaluator -> powsybl_open_loadflow.state_and_result_mapping.study_result_mapping 'adds violations to'
-  powsybl_open_loadflow.study_execution.monitored_result_filter -> powsybl_open_loadflow.state_and_result_mapping.study_result_mapping 'adds selected monitored results to'
 
   pypowsybl.python_study_parameters -> pypowsybl.native_image_bridge.native_parameter_abi 'marshals through'
   pypowsybl.native_image_bridge.native_parameter_abi -> pypowsybl.pandas_study_results 'returns result series through'
@@ -111,7 +106,6 @@ model {
   powsybl_core.study_contracts.state_monitors -> powsybl_open_loadflow.study_execution.post_contingency_state 'selects output from'
   powsybl_core.study_contracts.state_monitors -> powsybl_open_loadflow.study_execution.post_action_state 'selects output from'
   powsybl_core.study_contracts.selected_loading_limits -> powsybl_open_loadflow.study_execution.limit_violation_evaluator 'supplies active groups to'
-  powsybl_core.study_contracts.modified_result_parameters -> powsybl_open_loadflow.study_execution.monitored_result_filter 'configures'
   powsybl_open_loadflow.state_and_result_mapping.study_result_mapping -> powsybl_core.security_analysis_api 'returns results through'
   powsybl_open_loadflow.state_and_result_mapping.study_result_mapping -> powsybl_core.sensitivity_api 'returns results through'
   pypowsybl.native_image_bridge.native_parameter_abi -> powsybl_core.study_contracts.common_study_parameters 'maps Python values into'

@@ -30,7 +30,7 @@ views 'RDF database integration: proposal' {
         title 'CGMES import / export'
         description 'Conversion, families + sink, CgmesDiffExport'
       }
-      include powsybl_core.cgmes.cgmes_diff_import with {
+      include proposed_diffstacking.cgmes_diff_import with {
         title 'CgmesDiffImport'
         description 'Applies a difference in place'
       }
@@ -38,7 +38,7 @@ views 'RDF database integration: proposal' {
         title 'NetworkEventRecorder'
         description 'Change log of a network'
       }
-      include powsybl_core.triple_store_sparql with {
+      include proposed_diffstacking.triple_store_sparql with {
         title 'triple-store-impl-rdf4j-sparql'
         description 'Thin SPARQL + Graph Store client'
       }
@@ -47,19 +47,19 @@ views 'RDF database integration: proposal' {
     group 'Model registry (separate repository, e.g. powsybl-cgmes-registry)' {
       color blue
       opacity 8%
-      include powsybl_core.cgmes.rdfdb.snapshot_catalog with {
+      include proposed_diffstacking.cgmes_rdfdb.snapshot_catalog with {
         title 'SnapshotCatalog'
         description 'putFull / putDiff / putAsDiff, (scenario, timestep, version)'
       }
-      include powsybl_core.cgmes.rdfdb.version_graph with {
+      include proposed_diffstacking.cgmes_rdfdb.version_graph with {
         title 'VersionGraph + Checkpoint'
         description 'Plan NOOP | DIFF | FULL; fold a chain'
       }
-      include powsybl_core.cgmes.rdfdb.rdf_db_network_loader with {
+      include proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader with {
         title 'RdfDbNetworkLoader'
         description 'load / update / loadVariants: diff or full route'
       }
-      include powsybl_core.cgmes.rdfdb.triple_diff_calculator with {
+      include proposed_diffstacking.cgmes_rdfdb.triple_diff_calculator with {
         title 'Ingest'
         description 'IngestParser + TripleDiffCalculator (StatementDiff)'
       }
@@ -69,14 +69,14 @@ views 'RDF database integration: proposal' {
       }
     }
 
-    include rdf_database with {
+    include proposed_diffstacking_rdf_database with {
       title 'RDF store: any SPARQL 1.1 + Graph Store endpoint (e.g. Fuseki) or in-process memory:'
       description 'Any SPARQL 1.1 + GSP endpoint (e.g. Fuseki) or memory:'
     }
-    include rdf_database.store_meta_graph with { description 'Mutable catalogue, one per scenario' }
-    include rdf_database.store_data_graphs with { description 'One per CGMES file, written once' }
-    include rdf_database.store_diff_graphs with { description 'What a difference sets / replaced' }
-    include rdf_database.store_checkpoint_copies with { description 'A chain folded on the server' }
+    include proposed_diffstacking_rdf_database.store_meta_graph with { description 'Mutable catalogue, one per scenario' }
+    include proposed_diffstacking_rdf_database.store_data_graphs with { description 'One per CGMES file, written once' }
+    include proposed_diffstacking_rdf_database.store_diff_graphs with { description 'What a difference sets / replaced' }
+    include proposed_diffstacking_rdf_database.store_checkpoint_copies with { description 'A chain folded on the server' }
 
     group 'Legend' {
       color gray
@@ -87,46 +87,46 @@ views 'RDF database integration: proposal' {
       include rdfdb_integration_legend.proposed with { title 'Dashed: proposed'; description 'Not implemented' }
     }
 
-    exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.variants, powsybl_core.cgmes, powsybl_core.cgmes.rdfdb,
+    exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.variants, powsybl_core.cgmes, proposed_diffstacking.cgmes_rdfdb,
       proposed_unified_mapping, rdfdb_integration_legend
     exclude * -> *
 
     // TSO: a day ingested as differences
-    include rdfdb_integration_tso -> powsybl_core.cgmes.rdfdb.snapshot_catalog with { title 'putAsDiff ×96 ≈ 53 s IGM' }
-    include powsybl_core.cgmes.rdfdb.snapshot_catalog -> powsybl_core.cgmes.rdfdb.triple_diff_calculator with { title 'rich timestep ≈ 0.9–1.1 s sv20' }
-    include proposed_rdfdb_scenario_per_mas -> powsybl_core.cgmes.rdfdb.snapshot_catalog with { title 'one scenario per TSO' }
+    include rdfdb_integration_tso -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog with { title 'putAsDiff ×96 ≈ 53 s IGM' }
+    include proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.cgmes_rdfdb.triple_diff_calculator with { title 'rich timestep ≈ 0.9–1.1 s sv20' }
+    include proposed_rdfdb_scenario_per_mas -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog with { title 'one scenario per TSO' }
 
     // Study tool: one moment by the diff route
-    include rdfdb_integration_study_tool -> powsybl_core.cgmes.rdfdb.rdf_db_network_loader with { title 'load (sc, 08:30, v1.1)' }
-    include powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> powsybl_core.cgmes.rdfdb.version_graph with { title 'plan: one chain query' }
-    include powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> powsybl_core.cgmes.cgmes_diff_import with { title 'diff route ≈ 0.1 s sv6' }
-    include powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> proposed_unified_mapping.families with { title 'full route: cold ≈ 2 s IGM' }
-    include powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.iidm.network with { title '96 variants ≈ 4.7 s IGM' }
+    include rdfdb_integration_study_tool -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader with { title 'load (sc, 08:30, v1.1)' }
+    include proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.version_graph with { title 'plan: one chain query' }
+    include proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_diff_import with { title 'diff route ≈ 0.1 s sv6' }
+    include proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_unified_mapping.families with { title 'full route: cold ≈ 2 s IGM' }
+    include proposed_diffstacking.cgmes_diff_import -> powsybl_core.iidm.network with { title '96 variants ≈ 4.7 s IGM' }
     include proposed_unified_mapping.families -> powsybl_core.iidm.network with { title 'builds / updates' }
 
     // Operator: a change written back
     include rdfdb_integration_operator -> powsybl_core.iidm.network with { title 'changes a variant' }
     include powsybl_core.iidm.variants.network_event_recorder -> powsybl_core.iidm.network with { title 'records changes of' }
     include powsybl_core.iidm.variants.network_event_recorder -> proposed_unified_mapping.families with { title 'difference model ≈ 39 ms sv20' }
-    include proposed_unified_mapping.families -> powsybl_core.cgmes.rdfdb.snapshot_catalog with { title 'putDiff (RdfDbExport)' }
+    include proposed_unified_mapping.families -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog with { title 'putDiff (RdfDbExport)' }
 
     // Registry to store, through the thin client of powsybl-core
-    include powsybl_core.cgmes.rdfdb.snapshot_catalog -> powsybl_core.triple_store_sparql with { title 'one guarded SPARQL UPDATE' }
-    include powsybl_core.cgmes.rdfdb.version_graph -> powsybl_core.triple_store_sparql with { title 'chain query; Checkpoint COPY' }
-    include powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> powsybl_core.triple_store_sparql with { title 'parallel GSP GET' }
-    include powsybl_core.triple_store_sparql -> rdf_database with { title 'SPARQL 1.1 + GSP' }
-    include rdf_database.store_meta_graph -> rdf_database.store_data_graphs with { title 'indexes' }
-    include rdf_database.store_meta_graph -> rdf_database.store_diff_graphs with { title 'indexes' }
-    include rdf_database.store_checkpoint_copies -> rdf_database.store_diff_graphs with { title 'folds' }
+    include proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.triple_store_sparql with { title 'one guarded SPARQL UPDATE' }
+    include proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking.triple_store_sparql with { title 'chain query; Checkpoint COPY' }
+    include proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.triple_store_sparql with { title 'parallel GSP GET' }
+    include proposed_diffstacking.triple_store_sparql -> proposed_diffstacking_rdf_database with { title 'SPARQL 1.1 + GSP' }
+    include proposed_diffstacking_rdf_database.store_meta_graph -> proposed_diffstacking_rdf_database.store_data_graphs with { title 'indexes' }
+    include proposed_diffstacking_rdf_database.store_meta_graph -> proposed_diffstacking_rdf_database.store_diff_graphs with { title 'indexes' }
+    include proposed_diffstacking_rdf_database.store_checkpoint_copies -> proposed_diffstacking_rdf_database.store_diff_graphs with { title 'folds' }
 
     style * {
       color doc_unchanged
       textSize lg
     }
-    style powsybl_core.cgmes.rdfdb.*, proposed_rdfdb_scenario_per_mas, rdfdb_integration_legend.registry {
+    style proposed_diffstacking.cgmes_rdfdb.*, proposed_rdfdb_scenario_per_mas, rdfdb_integration_legend.registry {
       color doc_reworked
     }
-    style rdf_database, rdf_database.*, rdfdb_integration_legend.store {
+    style proposed_diffstacking_rdf_database, proposed_diffstacking_rdf_database.*, rdfdb_integration_legend.store {
       color doc_output
     }
     style proposed_rdfdb_scenario_per_mas, rdfdb_integration_legend.proposed {
@@ -147,7 +147,7 @@ views 'RDF database integration: proposal' {
       rdfdb_integration_legend.proposed
     }
     rank sink {
-      rdf_database.store_data_graphs, rdf_database.store_diff_graphs
+      proposed_diffstacking_rdf_database.store_data_graphs, proposed_diffstacking_rdf_database.store_diff_graphs
     }
     autoLayout TopBottom 50 30
   }

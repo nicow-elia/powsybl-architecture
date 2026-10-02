@@ -110,7 +110,7 @@ views 'Unified mapping: proposal' {
     }
 
     // The mapping
-    include powsybl_core.cgmes.change_translator with {
+    include proposed_diffstacking.change_translator with {
       title 'CgmesChangeTranslator'
       description 'Dispatches a recorded change by key'
     }
@@ -142,25 +142,25 @@ views 'Unified mapping: proposal' {
       title 'Full SSH export'
       description 'SteadyStateHypothesisExport, XML writer'
     }
-    include powsybl_core.cgmes.partial_ssh_export with {
+    include proposed_diffstacking.partial_ssh_export with {
       title 'Partial SSH'
       description 'PartialSshExport, from the buffer'
     }
-    include powsybl_core.cgmes.cgmes_diff_export with {
+    include proposed_diffstacking.cgmes_diff_export with {
       title 'CGMES difference model'
       description 'CgmesDiffExport, forward and reverse statements'
     }
-    include powsybl_core.cgmes.rdfdb.rdf_db_difference_sink with {
+    include proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink with {
       title 'RDF database (cgmes-rdfdb)'
       description 'RdfDbDifferenceSink: two named graphs'
     }
-    include powsybl_core.cgmes.cgmes_diff_import with {
+    include proposed_diffstacking.cgmes_diff_import with {
       title 'In-place import'
       description 'CgmesDiffImport fast route'
     }
 
     // Derived artefacts
-    include powsybl_core.cgmes.fast_route_capabilities with {
+    include proposed_diffstacking.fast_route_capabilities with {
       title 'Capability table'
       description 'FastRouteCapabilities, derived from the blocks'
     }
@@ -187,7 +187,7 @@ views 'Unified mapping: proposal' {
     }
 
     exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.io, powsybl_core.iidm.io.exchange_formats,
-      powsybl_core.iidm.io.import_providers, powsybl_core.cgmes, powsybl_core.cgmes.rdfdb,
+      powsybl_core.iidm.io.import_providers, powsybl_core.cgmes, proposed_diffstacking.cgmes_rdfdb,
       proposed_unified_mapping, unified_mapping_legend
     exclude powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.iidm.network
     exclude powsybl_core.cgmes.conversion_update -> powsybl_core.iidm.network
@@ -196,17 +196,17 @@ views 'Unified mapping: proposal' {
     exclude powsybl_core.cgmes.ssh_export -> *
     exclude * -> powsybl_core.iidm.network
     exclude proposed_unified_mapping.property_sink -> powsybl_core.iidm.io.exchange_formats.cgmes
-    exclude powsybl_core.cgmes.partial_ssh_export -> powsybl_core.iidm.io.exchange_formats.cgmes
+    exclude proposed_diffstacking.partial_ssh_export -> powsybl_core.iidm.io.exchange_formats.cgmes
     exclude proposed_unified_mapping.mapping_page -> proposed_unified_mapping.refusal
-    exclude powsybl_core.cgmes.change_translator -> powsybl_core.cgmes.difference_model
-    exclude powsybl_core.cgmes.partial_ssh_export -> powsybl_core.cgmes.change_translator
-    exclude powsybl_core.cgmes.cgmes_diff_export -> powsybl_core.cgmes.change_translator
+    exclude proposed_diffstacking.change_translator -> proposed_diffstacking.difference_model
+    exclude proposed_diffstacking.partial_ssh_export -> proposed_diffstacking.change_translator
+    exclude proposed_diffstacking.cgmes_diff_export -> proposed_diffstacking.change_translator
     include powsybl_core.cgmes.element_conversions -> powsybl_core.iidm.network
     include proposed_unified_mapping.property_sink -> powsybl_core.cgmes.ssh_export with { title 'full model: Xml' }
-    include proposed_unified_mapping.property_sink -> powsybl_core.cgmes.partial_ssh_export with { title 'one change: buffer' }
-    include proposed_unified_mapping.property_sink -> powsybl_core.cgmes.cgmes_diff_export with { title 'one change: buffer' }
+    include proposed_unified_mapping.property_sink -> proposed_diffstacking.partial_ssh_export with { title 'one change: buffer' }
+    include proposed_unified_mapping.property_sink -> proposed_diffstacking.cgmes_diff_export with { title 'one change: buffer' }
     include powsybl_core.cgmes.element_conversions -> proposed_unified_mapping.plain_rows with { title 'reads loads, areas, switches through' }
-    include powsybl_core.cgmes.cgmes_diff_import -> proposed_unified_mapping.subject_index with { title 'resolves subjects, completes groups with' }
+    include proposed_diffstacking.cgmes_diff_import -> proposed_unified_mapping.subject_index with { title 'resolves subjects, completes groups with' }
 
     style * {
       color doc_reworked
@@ -229,14 +229,14 @@ views 'Unified mapping: proposal' {
     description 'Export (steps 1-8): Generator G.setTargetP(100) is recorded; CgmesChangeTranslator dispatches it by key to MachineFamily, whose describeSynchronousMachine writes RotatingMachine.p = -100 into a CgmesPropertySink; the same function writes the full SSH. Import (steps 9-16): a difference stating RotatingMachine.p = -120 is planned by FastRoutePlan, resolved by Families.resolve, completed to the SynchronousMachine block of MachineFamily, and applied by the unchanged Conversion.update, where SynchronousMachineConversion.update states targetP = -p again.'
     include powsybl_core.iidm.network with { title 'IIDM Network'; description 'Generator G, targetP' }
     include powsybl_core.iidm.variants.network_event_recorder with { title 'NetworkEventRecorder'; description 'Records the change as an event' }
-    include powsybl_core.cgmes.change_translator with { title 'CgmesChangeTranslator'; description 'Dispatches a change by key' }
+    include proposed_diffstacking.change_translator with { title 'CgmesChangeTranslator'; description 'Dispatches a change by key' }
     include proposed_unified_mapping.families.machine_family with { description 'States RotatingMachine.p = −targetP once' }
     include proposed_unified_mapping.property_sink with { description 'Xml writer or buffer of one change' }
     include powsybl_core.cgmes.ssh_export with { title 'Full SSH export'; description 'SteadyStateHypothesisExport' }
-    include powsybl_core.cgmes.partial_ssh_export with { title 'Partial SSH'; description 'PartialSshExport' }
-    include powsybl_core.cgmes.cgmes_diff_export with { title 'CGMES difference model'; description 'CgmesDiffExport' }
-    include powsybl_core.cgmes.rdfdb.rdf_db_difference_sink with { title 'RDF database'; description 'RdfDbDifferenceSink (cgmes-rdfdb)' }
-    include powsybl_core.cgmes.cgmes_diff_import with { title 'CgmesDiffImport'; description 'In-place import of a difference' }
+    include proposed_diffstacking.partial_ssh_export with { title 'Partial SSH'; description 'PartialSshExport' }
+    include proposed_diffstacking.cgmes_diff_export with { title 'CGMES difference model'; description 'CgmesDiffExport' }
+    include proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink with { title 'RDF database'; description 'RdfDbDifferenceSink (cgmes-rdfdb)' }
+    include proposed_diffstacking.cgmes_diff_import with { title 'CgmesDiffImport'; description 'In-place import of a difference' }
     include proposed_unified_mapping.fast_route_plan with { description 'Resolves, checks, completes every subject' }
     include proposed_unified_mapping.subject_index with { title 'Families.resolve'; description 'CGMES id to network object, class' }
     include powsybl_core.cgmes.conversion_update with { title 'Conversion.update'; description 'Upstream SSH update, unchanged' }
@@ -245,23 +245,23 @@ views 'Unified mapping: proposal' {
 
     // Export of the change
     powsybl_core.iidm.network -> powsybl_core.iidm.variants.network_event_recorder 'G.setTargetP(100): event targetP'
-    powsybl_core.iidm.variants.network_event_recorder -> powsybl_core.cgmes.change_translator 'change log'
-    powsybl_core.cgmes.change_translator -> proposed_unified_mapping.families.machine_family 'key targetP: generatorUpdates(G)'
+    powsybl_core.iidm.variants.network_event_recorder -> proposed_diffstacking.change_translator 'change log'
+    proposed_diffstacking.change_translator -> proposed_unified_mapping.families.machine_family 'key targetP: generatorUpdates(G)'
     proposed_unified_mapping.families.machine_family -> proposed_unified_mapping.property_sink 'describeSynchronousMachine: RotatingMachine.p = −100' {
       notes 'The rule is stated here once: loadConventionP = −targetP.'
     }
-    proposed_unified_mapping.property_sink -> powsybl_core.cgmes.partial_ssh_export 'buffer: SynchronousMachine block'
-    proposed_unified_mapping.property_sink -> powsybl_core.cgmes.cgmes_diff_export 'buffer: forward and reverse statements'
-    powsybl_core.cgmes.cgmes_diff_export -> powsybl_core.cgmes.rdfdb.rdf_db_difference_sink 'DifferenceModelSet: two named graphs'
+    proposed_unified_mapping.property_sink -> proposed_diffstacking.partial_ssh_export 'buffer: SynchronousMachine block'
+    proposed_unified_mapping.property_sink -> proposed_diffstacking.cgmes_diff_export 'buffer: forward and reverse statements'
+    proposed_diffstacking.cgmes_diff_export -> proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink 'DifferenceModelSet: two named graphs'
     proposed_unified_mapping.property_sink -> powsybl_core.cgmes.ssh_export 'full model: same describe, Xml sink'
 
     // Import of a difference
-    powsybl_core.cgmes.rdfdb.rdf_db_difference_sink -> powsybl_core.cgmes.cgmes_diff_import 'RdfDbNetworkLoader: difference RotatingMachine.p = −120'
-    powsybl_core.cgmes.cgmes_diff_import -> proposed_unified_mapping.fast_route_plan 'FastRoutePlan.of(network, diffs)'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink -> proposed_diffstacking.cgmes_diff_import 'RdfDbNetworkLoader: difference RotatingMachine.p = −120'
+    proposed_diffstacking.cgmes_diff_import -> proposed_unified_mapping.fast_route_plan 'FastRoutePlan.of(network, diffs)'
     proposed_unified_mapping.fast_route_plan -> proposed_unified_mapping.subject_index 'resolve(id, SynchronousMachine)'
     proposed_unified_mapping.fast_route_plan -> proposed_unified_mapping.families.machine_family 'block SYNCHRONOUS_MACHINE: properties, query'
     proposed_unified_mapping.families.machine_family -> proposed_unified_mapping.fast_route_plan 'describe: completes the block'
-    powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.cgmes.conversion_update 'synthetic SSH, scoped update'
+    proposed_diffstacking.cgmes_diff_import -> powsybl_core.cgmes.conversion_update 'synthetic SSH, scoped update'
     powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.element_conversions 'synchronousMachinesForUpdate row'
     powsybl_core.cgmes.element_conversions -> powsybl_core.iidm.network 'update(): targetP = −p = 120' {
       notes 'Upstream code, unchanged: the import states the rule a second time.'

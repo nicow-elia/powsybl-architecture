@@ -1,25 +1,22 @@
 views 'powsybl-open-loadflow' {
   view fast_restart_and_network_cache {
     title 'Open Load Flow: Fast Restart and NetworkCache'
-    description 'NetworkCache observes IIDM changes and parameter compatibility to reuse solver networks. The generic entry design backs both AC and DC load-flow fast restart; topology changes trigger the stricter reset path, while compatible changes can reuse a loaded computation network.'
+    description 'NetworkCache observes IIDM changes to reuse the AC solver network of the last run (main bb19987a). Each change is classified: one the cache can apply in place marks the cached AC context as network-updated, so AcLoadFlowFromCache only re-solves; an unsupported one invalidates the entry. The generic AC/DC entry design and the DC fast restart exist only on pull-request branches: see the proposal view olf_branch_network_cache.'
 
     include powsybl_open_loadflow.network_cache.*
     include powsybl_open_loadflow.state_and_result_mapping
+    exclude proposed_olf_branches.*
     autoLayout LeftRight
 
     style powsybl_open_loadflow.network_cache.iidm_change_events,
-      powsybl_open_loadflow.network_cache.cache_input,
       powsybl_open_loadflow.state_and_result_mapping {
       color indigo
     }
     style powsybl_open_loadflow.network_cache.network_cache_entry,
-      powsybl_open_loadflow.network_cache.ac_cache_value,
-      powsybl_open_loadflow.network_cache.dc_cache_value,
       powsybl_open_loadflow.network_cache.change_classifier {
       color sky
     }
-    style powsybl_open_loadflow.network_cache.ac_fast_restart,
-      powsybl_open_loadflow.network_cache.dc_fast_restart {
+    style powsybl_open_loadflow.network_cache.ac_fast_restart {
       color green
     }
   }

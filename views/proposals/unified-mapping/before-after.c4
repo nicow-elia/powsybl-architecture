@@ -10,14 +10,15 @@ views 'Unified mapping: proposal' {
     include powsybl_core.iidm.io.export_providers
     include powsybl_core.iidm.io.export_providers.cgmes_exporter
     include powsybl_core.cgmes
-    include powsybl_core.cgmes.partial_ssh_export
-    include powsybl_core.cgmes.cgmes_diff_export
-    include powsybl_core.cgmes.change_translator
-    include powsybl_core.cgmes.difference_model
-    include powsybl_core.cgmes.difference_sink
-    include powsybl_core.cgmes.cgmes_diff_import
-    include powsybl_core.cgmes.fast_route_capabilities
-    include powsybl_core.cgmes.cgmes_object_dump
+    include proposed_diffstacking
+    include proposed_diffstacking.partial_ssh_export
+    include proposed_diffstacking.cgmes_diff_export
+    include proposed_diffstacking.change_translator
+    include proposed_diffstacking.difference_model
+    include proposed_diffstacking.difference_sink
+    include proposed_diffstacking.cgmes_diff_import
+    include proposed_diffstacking.fast_route_capabilities
+    include proposed_diffstacking.cgmes_object_dump
     include powsybl_core.cgmes.conversion_update
     include proposed_unified_mapping
     include proposed_unified_mapping.before_ssh_writers
@@ -37,13 +38,14 @@ views 'Unified mapping: proposal' {
     include powsybl_core.iidm.io.exchange_formats
     include powsybl_core.iidm.io.exchange_formats.cgmes
     include powsybl_core.cgmes
-    include powsybl_core.cgmes.partial_ssh_export
-    include powsybl_core.cgmes.cgmes_diff_export
-    include powsybl_core.cgmes.change_translator
-    include powsybl_core.cgmes.difference_model
-    include powsybl_core.cgmes.difference_sink
-    include powsybl_core.cgmes.cgmes_diff_import
-    include powsybl_core.cgmes.fast_route_capabilities
+    include proposed_diffstacking
+    include proposed_diffstacking.partial_ssh_export
+    include proposed_diffstacking.cgmes_diff_export
+    include proposed_diffstacking.change_translator
+    include proposed_diffstacking.difference_model
+    include proposed_diffstacking.difference_sink
+    include proposed_diffstacking.cgmes_diff_import
+    include proposed_diffstacking.fast_route_capabilities
     include powsybl_core.cgmes.conversion_update
     include proposed_unified_mapping
     include proposed_unified_mapping.families

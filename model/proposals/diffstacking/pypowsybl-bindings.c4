@@ -1,0 +1,39 @@
+// Proposal: diffstacking - the pypowsybl bindings of the change recorder and of the RDF database. Implemented on the
+// local pypowsybl branch feat/vibestacker (feat/diffstacking), not on upstream/main.
+model {
+  proposed_diffstacking_pypowsybl = module 'Diffstacking in pypowsybl (proposal)' 'Python recorder and RDF database objects and their Java C entry points. Implemented on the local branch feat/vibestacker, not upstream.' {
+    python_event_recorder = component 'pypowsybl.network.NetworkEventRecorder' 'Context manager; holds the handle of a Java NetworkEventRecording and exports partial SSH / CGMES difference models as strings, files or zip.'
+    python_rdf_database = component 'pypowsybl.network.RdfDatabase' 'Context manager over the handle of a Java RdfDbConnection: connect_rdf_db / connect, load_cgmes, checkpoint, clear, and the catalogue views scenarios / snapshots / versions / timesteps / models as dataframes. Every call names the scenario - the base grid model, in practice the day - as its second positional argument, and addresses a state inside it by version and timestep.'
+    network_event_recorder_c_functions = binding 'NetworkEventRecorderCFunctions'
+    network_event_recording = component 'NetworkEventRecording' 'Attaches a NetworkEventRecorder to the Network, snapshots events, maps string options to export options.'
+    rdf_db_c_functions = binding 'RdfDbCFunctions' 'createRdfDbConnection, loadCgmesToRdfDb, loadNetworkFromRdfDb, updateNetworkFromRdfDb, exportNetworkEventsToRdfDb, createRdfDbCheckpoint, getNetworkRdfDbIdentity and the five catalogue entry points. Each carries the scenario, a version and a timestep. An update answers with the handle of an outcome, read back through getRdfDbUpdateInfo and, on the full route only, getRdfDbUpdateNetwork. The variant half adds three: loadNetworkVariantsFromRdfDb (three parallel string arrays - variant id, version, timestep - an empty string meaning let the library decide), getNetworkRdfDbVariants and exportNetworkEventsToRdfDbPerVariant; the variant of a single update or a single export travels in the option map that is already there, so no other signature moved.'
+    rdf_db_util = component 'RdfDbUtil' 'The JVM-testable half of the RDF database bindings: option map to RdfDatabase, subset names to CgmesSubset, (scenario, version, timestep) strings to a SnapshotRef, update outcomes to routes (noop | diff | full | refused, and update for the legacy profile replacement), and the catalogue records to dataframes. It also owns the variant surface: loadVariants turns the three string arrays into VariantRequests, variantRows turns the bindings, the variants IIDM holds and the refusals of the last operation into one table with a status column, identity answers for one variant by running inside RdfDbProvenance.inVariant, and the two per-variant exports write each variant history after its own snapshot.'
+  }
+
+  pypowsybl.python_network -> proposed_diffstacking_pypowsybl.python_event_recorder 'would extend: creates (event_recorder())'
+  proposed_diffstacking_pypowsybl.python_event_recorder -> pypowsybl.pybind_extension 'would extend: start/stop/export calls'
+  pypowsybl.java_bindings -> proposed_diffstacking_pypowsybl.network_event_recorder_c_functions 'would extend: new entry points'
+  proposed_diffstacking_pypowsybl.network_event_recorder_c_functions -> proposed_diffstacking_pypowsybl.network_event_recording 'delegates to'
+  proposed_diffstacking_pypowsybl.network_event_recording -> powsybl_core.iidm.variants.network_event_recorder 'would consume as-is: records with'
+  proposed_diffstacking_pypowsybl.network_event_recording -> proposed_diffstacking.partial_ssh_export 'exports partial SSH through'
+  proposed_diffstacking_pypowsybl.network_event_recording -> proposed_diffstacking.cgmes_diff_export 'exports difference models through'
+  pypowsybl.java_bindings.network_c_functions -> proposed_diffstacking.cgmes_diff_import 'would consume as-is: update_from_* reaches it transparently via CgmesImport.update'
+
+  pypowsybl.python_api -> proposed_diffstacking_pypowsybl.python_rdf_database 'would extend: opens (connect_rdf_db / connect)'
+  proposed_diffstacking_pypowsybl.python_rdf_database -> pypowsybl.pybind_extension 'would extend: upload, catalogue, load and update calls'
+  pypowsybl.python_network -> proposed_diffstacking_pypowsybl.python_rdf_database 'would extend: update_from_rdf_db(db, scenario, version, timestep)'
+  proposed_diffstacking_pypowsybl.python_event_recorder -> proposed_diffstacking_pypowsybl.python_rdf_database 'to_rdf_updates(db, scenario, version, timestep)'
+  pypowsybl.java_bindings -> proposed_diffstacking_pypowsybl.rdf_db_c_functions 'would extend: new entry points'
+  proposed_diffstacking_pypowsybl.rdf_db_c_functions -> proposed_diffstacking_pypowsybl.rdf_db_util 'delegates to'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.rdf_database_config 'builds from the option map'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.rdf_db_connection 'opens and uploads CGMES files through'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader 'load / update of one snapshot; another scenario is a full reload'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'per scenario: resolves labels, putFull / putAsDiff, listings'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink 'RdfDbExport: recorder events become a snapshot of the base scenario'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.checkpoint 'checkpoint()'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.variant_updater 'loadVariants(scenario, requests) and update(..., targetVariant): a day as variants, or one variant moved'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.variant_binding 'variantRows(network): what every variant stands for, plus the refusals of the last operation'
+  proposed_diffstacking_pypowsybl.rdf_db_util -> proposed_diffstacking.cgmes_rdfdb.variant_scope 'identity(network, db, scenario, variant) and the per-variant exports run inside RdfDbProvenance.inVariant'
+  proposed_diffstacking_pypowsybl.network_event_recording -> proposed_diffstacking.cgmes_rdfdb.variant_scope 'the variant option of to_ssh / to_cgmes_diff(s) selects the state and the identity through RdfDbProvenance.inVariant'
+  pypowsybl.python_network -> proposed_diffstacking_pypowsybl.python_rdf_database 'would extend: from_rdf_db(timesteps=[...] | variants={...}) and update_from_rdf_db(..., variant=): snapshots as network variants'
+}

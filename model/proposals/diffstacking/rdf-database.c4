@@ -1,5 +1,7 @@
+// Proposal: diffstacking - the external SPARQL store the RDF database integration talks to (local branch
+// feat/vibestacker). The store products exist; nothing upstream in PowSyBl talks to one.
 model {
-  rdf_database = database 'SPARQL 1.1 graph database' 'An external RDF store holding CGMES named graphs: Apache Jena Fuseki, RDF4J server or GraphDB. Reached over SPARQL 1.1 Query and Update and, for bulk transfer of a whole named graph, the SPARQL 1.1 Graph Store Protocol. One database holds many scenarios - days, base grid models - side by side.' {
+  proposed_diffstacking_rdf_database = database 'SPARQL 1.1 graph database' 'An external RDF store holding CGMES named graphs: Apache Jena Fuseki, RDF4J server or GraphDB. Reached over SPARQL 1.1 Query and Update and, for bulk transfer of a whole named graph, the SPARQL 1.1 Graph Store Protocol. One database holds many scenarios - days, base grid models - side by side.' {
     link https://www.w3.org/TR/sparql11-http-rdf-update/
 
     scenario_a = component 'Scenario "2016-01-01"' 'The named graphs of one base grid model: contexts:2016-01-01/<file> per instance file, one metadata graph http://powsybl.org/rdfdb/2016-01-01/meta indexing them, and two immutable graphs per recorded difference.'
