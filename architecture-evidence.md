@@ -1,6 +1,6 @@
 # Architecture Evidence
 
-This ledger records the source-backed evidence for the State Estimation as-is baseline. It documents what exists in the checked-out repositories; it is not evidence for any element in `model/proposals/`.
+This ledger records the source-backed evidence for the State Estimation as-is baseline. It documents what exists in the checked-out repositories; proposal elements are not evidenced here, except where a proposal section below cites measured figures of an implementation branch (see "Unified mapping proposal").
 
 | FQN | Repository | Source path(s) | Branch/commit reviewed | Last checked |
 | --- | --- | --- | --- | --- |
