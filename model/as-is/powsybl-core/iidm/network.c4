@@ -30,6 +30,9 @@ model {
         network_listener = component 'NetworkListener' 'Receives IIDM network changes.' {
           link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/NetworkListener.html
         }
+        network_event_recorder = component 'NetworkEventRecorder' 'NetworkListener collecting the changes applied to a network as a replayable event log.' {
+          link https://javadoc.io/doc/com.powsybl/powsybl-iidm-api/latest/com.powsybl.iidm.api/com/powsybl/iidm/network/NetworkEventRecorder.html
+        }
       }
     }
   }

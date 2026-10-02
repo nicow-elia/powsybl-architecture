@@ -10,4 +10,5 @@ specification {
   element binding
   element library
   element format
+  element database
 }

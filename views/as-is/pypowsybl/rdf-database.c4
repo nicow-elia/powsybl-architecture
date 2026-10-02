@@ -1,0 +1,107 @@
+views 'pypowsybl' {
+  view pypowsybl_rdf_database {
+    title 'pypowsybl: loading CGMES through an RDF database'
+    description 'The Python side of the split CGMES loading. connect_rdf_db returns an RdfDatabase holding the handle of a Java RdfDbConnection; load_cgmes parses the instance files once into a scenario of the database, from_rdf_db builds a network out of that scenario, and Network.update_from_rdf_db applies a stored steady state to a network that is already in memory. The bindings themselves are thin: RdfDbCFunctions are one-liners over RdfDbUtil, which is where the option map, the subset names and the graph catalogue are translated, and which is therefore the part that can be tested on the JVM. Apache Jena never appears - the client is RDF4J plus the JDK HTTP client, and the test server runs as a subprocess. Inside a scenario a state is addressed by (timestep, version): from_rdf_db reads one snapshot, update_from_rdf_db walks to one and answers noop | diff | full, and NetworkEventRecorder.to_rdf_updates writes one. A database holds several days as several scenarios, and a difference never crosses them, so a walk to another day is always a full reload.'
+
+    include pypowsybl.python_network
+    include pypowsybl.python_event_recorder
+    include pypowsybl.python_rdf_database
+    include pypowsybl.pybind_extension
+    include pypowsybl.native_image_bridge
+    include pypowsybl.java_bindings.rdf_db_c_functions
+    include pypowsybl.java_bindings.rdf_db_util
+    include powsybl_core.cgmes.rdfdb.rdf_database_config
+    include powsybl_core.cgmes.rdfdb.rdf_db_connection
+    include powsybl_core.cgmes.rdfdb.rdf_db_network_loader
+    include powsybl_core.cgmes.rdfdb.snapshot_catalog
+    include powsybl_core.cgmes.rdfdb.version_graph
+    include powsybl_core.cgmes.rdfdb.rdf_db_difference_sink
+    include powsybl_core.cgmes.rdfdb.checkpoint
+    include powsybl_core.triple_store_sparql
+    include rdf_database
+
+    autoLayout LeftRight
+
+    style pypowsybl.python_network, pypowsybl.python_rdf_database {
+      color sky
+    }
+    style powsybl_core.cgmes.rdfdb.rdf_database_config, powsybl_core.cgmes.rdfdb.rdf_db_connection, powsybl_core.cgmes.rdfdb.rdf_db_network_loader, powsybl_core.triple_store_sparql {
+      color green
+    }
+  }
+}
+
+views 'pypowsybl' {
+  dynamic view pypowsybl_rdf_db_update_flow {
+    title 'update_from_rdf_db(db, scenario, version, timestep): noop | diff | full'
+    description 'What one call does. The Python layer validates the scenario and converts the timestep to text, the binding resolves the address inside that scenario, and the planner answers with one query - unless the target belongs to another scenario, in which case the answer is a rebuild and no query is sent at all. The two branches below are alternatives, not a sequence: the diff branch applies the differences of the path in place and the Python object keeps its handle; the full branch materialises the target and the Python object swaps its handle for the new Java network, which is why variants and earlier recorders do not survive it.'
+    variant sequence
+
+    pypowsybl.python_network -> pypowsybl.pybind_extension 'update_network_from_rdf_db(network, db, scenario, version, timestep, ...)'
+    pypowsybl.pybind_extension -> pypowsybl.java_bindings.rdf_db_c_functions 'through the native image bridge'
+    pypowsybl.java_bindings.rdf_db_c_functions -> pypowsybl.java_bindings.rdf_db_util 'checkScenario, timestepOrNull, RdfDbUpdateOptions'
+    pypowsybl.java_bindings.rdf_db_util -> powsybl_core.cgmes.rdfdb.snapshot_catalog 'resolve(version, timestep) against this scenario base day'
+    pypowsybl.java_bindings.rdf_db_util -> powsybl_core.cgmes.rdfdb.rdf_db_network_loader 'update(network, db, SnapshotRef, options)'
+    powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> powsybl_core.cgmes.rdfdb.version_graph 'plan: one query; another scenario is FULL without a query' {
+      notes 'NOOP when the network already carries the target state. DIFF when the path is walkable and shorter than maxDiffChain. FULL otherwise, with the reasons, among them "diffs never cross scenarios".'
+    }
+
+    powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> powsybl_core.cgmes.rdfdb.rdf_db_diff_source 'DIFF branch: fetch every difference of the path in one request'
+    powsybl_core.cgmes.rdfdb.rdf_db_diff_source -> powsybl_core.cgmes.cgmes_diff_import 'composed difference per profile'
+    powsybl_core.cgmes.cgmes_diff_import -> pypowsybl.java_bindings.rdf_db_util 'applied in place; route DIFF_APPLIED' {
+      notes 'The Python Network keeps the very same Java handle, so variants, sub-networks and recorders are untouched.'
+    }
+
+    powsybl_core.cgmes.rdfdb.rdf_db_network_loader -> powsybl_core.cgmes.rdfdb.rdf_db_materializer 'FULL branch: base graphs of the target scenario plus the chain'
+    powsybl_core.cgmes.rdfdb.rdf_db_materializer -> pypowsybl.java_bindings.rdf_db_util 'a new Java Network; route FULL_RELOAD'
+    pypowsybl.java_bindings.rdf_db_util -> pypowsybl.python_network 'UpdateOutcome handle' {
+      notes 'Python reads get_rdf_db_update_info for the route and, only on the full route, get_rdf_db_update_network, then Network._replace_handle swaps the handle. The old handle dies with its last Python reference.'
+    }
+  }
+
+  dynamic view pypowsybl_rdf_db_export_flow {
+    title 'to_rdf_updates(db, scenario, version, timestep): recorder -> database snapshot'
+    description 'The write direction. A recorder holds what a network changed; the export turns those events into one difference model per touched profile and stores them as one addressable snapshot of the base scenario the network belongs to. Nothing is written twice and nothing crosses a scenario: the sink refuses a difference whose base is not stored where the address says it is.'
+    variant sequence
+
+    pypowsybl.python_event_recorder -> pypowsybl.pybind_extension 'export_network_events_to_rdf_db(recorder, db, scenario, version, timestep, options)'
+    pypowsybl.pybind_extension -> pypowsybl.java_bindings.rdf_db_c_functions 'through the native image bridge'
+    pypowsybl.java_bindings.rdf_db_c_functions -> pypowsybl.java_bindings.rdf_db_util 'reject the options the database decides; resolve the address'
+    pypowsybl.java_bindings.rdf_db_util -> powsybl_core.cgmes.cgmes_diff_export 'label-taking RdfDbExport.export(scenario, version, timestepText); core resolves the label against that scenario base day'
+    powsybl_core.cgmes.cgmes_diff_export -> powsybl_core.cgmes.rdfdb.rdf_db_difference_sink 'DifferenceModelSet, one model per touched profile'
+    powsybl_core.cgmes.rdfdb.rdf_db_difference_sink -> rdf_database 'one guarded SPARQL UPDATE' {
+      notes 'The guard is what enforces the rules: the sender must be at the head it says it supersedes, the address must be free, and the base must be stored in this very scenario.'
+    }
+    powsybl_core.cgmes.rdfdb.rdf_db_difference_sink -> pypowsybl.java_bindings.rdf_db_util 'the stored models'
+    pypowsybl.java_bindings.rdf_db_util -> pypowsybl.python_event_recorder 'model ids' {
+      notes 'The sender identity has advanced to the new snapshot, and the recorder clears its events unless clear=False, so the next export chains cleanly on this one.'
+    }
+  }
+}
+
+views 'pypowsybl' {
+  dynamic view pypowsybl_rdf_db_variants_flow {
+    title 'from_rdf_db(timesteps=[...]): a day as the variants of one network'
+    description 'The third way to walk a day. One network is walked through the timesteps and keeps no history; one network per timestep converts the same equipment once per timestep; this converts the first snapshot once and makes every further timestep a clone plus the stored differences between them. Python hands three parallel string arrays across the boundary - variant id, version, timestep, an empty string meaning "let the library decide" - the core bulk loader sends one multi-side chain query and one statement fetch whatever the number of timesteps, and every target is applied inside its own variant scope. A snapshot that cannot be reached without writing state shared by all variants - limits, impedances, the HVDC values of the simplified DC model, an equipment drift - is refused with its reasons and no variant is created for it; the refusals stay on the network, where variants_binding() shows them and where on_refusal="raise" turns them into RdfDbVariantRefusedError. Nothing here can swap the Python handle: a variant operation never takes the full-reload route.'
+    variant sequence
+
+    pypowsybl.python_network -> pypowsybl.pybind_extension 'load_network_variants_from_rdf_db(db, scenario, variant_ids, versions, timesteps, ...)'
+    pypowsybl.pybind_extension -> pypowsybl.java_bindings.rdf_db_c_functions 'through the native image bridge'
+    pypowsybl.java_bindings.rdf_db_c_functions -> pypowsybl.java_bindings.rdf_db_util 'checkScenario; the three arrays become VariantRequests'
+    pypowsybl.java_bindings.rdf_db_util -> powsybl_core.cgmes.rdfdb.snapshot_catalog 'resolve(version, timestep) per request, against this scenario base day'
+    pypowsybl.java_bindings.rdf_db_util -> powsybl_core.cgmes.rdfdb.variant_updater 'loadVariants(db, scenario, requests, options)'
+    powsybl_core.cgmes.rdfdb.variant_updater -> powsybl_core.cgmes.rdfdb.version_graph 'one chain query for every requested snapshot at once' {
+      notes 'Shared ancestors come back once, so 96 timesteps cost about (96 + base depth) snapshots of rows rather than 96 times the depth. A snapshot the scenario does not hold at all is an error raised here, before anything is loaded.'
+    }
+    powsybl_core.cgmes.rdfdb.variant_updater -> powsybl_core.cgmes.rdfdb.rdf_db_materializer 'the first requested snapshot, converted once; it becomes the network and its primary variant'
+    powsybl_core.cgmes.rdfdb.variant_updater -> powsybl_core.cgmes.rdfdb.rdf_db_diff_source 'every difference of every accepted path, in one request'
+    powsybl_core.cgmes.rdfdb.variant_updater -> powsybl_core.cgmes.rdfdb.variant_scope 'per target: clone the nearest bound variant, then apply inside its scope' {
+      notes 'variantSafeOnly is forced on, so an unsafe statement blocks the apply instead of leaking into the other variants. A blocked target is VARIANT_REFUSED: its variant is removed again and the reasons are kept on the provenance.'
+    }
+    powsybl_core.cgmes.rdfdb.variant_scope -> powsybl_core.cgmes.rdfdb.variant_binding 'the variant now stands for that snapshot'
+    powsybl_core.cgmes.rdfdb.variant_updater -> pypowsybl.java_bindings.rdf_db_util 'the network, with one variant per snapshot that was reached'
+    pypowsybl.java_bindings.rdf_db_util -> pypowsybl.python_network 'one Java handle; the working variant is the primary' {
+      notes 'Python then reads get_network_rdf_db_variants: primary | bound | unbound | refused per row. on_refusal="raise" turns the refused rows into RdfDbVariantRefusedError, "skip" leaves them in the table.'
+    }
+  }
+}

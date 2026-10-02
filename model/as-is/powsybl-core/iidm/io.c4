@@ -47,6 +47,9 @@ model {
         ampl = format 'AMPL' {
           link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/ampl/index.html
         }
+        difference_model_format = format 'CGMES Difference Model' 'IEC 61970-552 difference model document, one per CGMES profile.' {
+          link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/export.html
+        }
       }
 
       import_providers = module 'Importer implementations' {
