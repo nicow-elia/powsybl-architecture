@@ -1,0 +1,282 @@
+// Three document views of the unified IIDM <-> CGMES mapping: upstream main as it is, the families after the rework,
+// and one change of a generator's active power through both directions. Light fills with dark text (doc_* colours of
+// 00-specification.c4); red marks the code that states the rule RotatingMachine.p = -targetP itself.
+views 'Unified mapping: proposal' {
+
+  view upstream-main-today {
+    title 'Upstream main today: every direction states the mapping itself'
+    description 'powsybl-core upstream main (f3d031b60f). The import reads the triple store through the SPARQL catalogue; Conversion.convert builds the network from EQ and then runs the same SSH update that Importer.update runs on a loaded network, so the import rule of a synchronous machine (targetP = -p) is stated once, in SynchronousMachineConversion.update. The export states the inverse again, in SteadyStateHypothesisExport.writeGenerators (one statement per original class: SynchronousMachine, ExternalNetworkInjection, EquivalentInjection, plus one for batteries).'
+
+    include powsybl_core.iidm.io.exchange_formats.cgmes with {
+      title 'CGMES files'
+      description 'EQ, SSH, TP, SV instance files'
+    }
+    include powsybl_core.iidm.io.import_providers.cgmes_importer with {
+      description 'Importer: Network.read and Importer.update'
+    }
+    include powsybl_core.cgmes.triple_store with {
+      description 'Holds the instance files as RDF'
+    }
+    include powsybl_core.cgmes.query_catalog with {
+      title 'SPARQL catalogue (CIM16.sparql)'
+      description 'Named queries, e.g. synchronousMachinesForUpdate'
+    }
+    include powsybl_core.cgmes.conversion with {
+      title 'Conversion.convert'
+      description 'Full import: EQ objects, then the SSH update'
+    }
+    include powsybl_core.cgmes.conversion_update with {
+      title 'Conversion.update + Update'
+      description 'SSH update of an already loaded network'
+    }
+    include powsybl_core.cgmes.element_conversions with {
+      title 'elements/*Conversion'
+      description 'SynchronousMachineConversion.update: targetP = −p, both paths'
+    }
+    include powsybl_core.iidm.network with {
+      title 'IIDM Network'
+      description 'Generator.targetP, generator sign convention'
+    }
+    include powsybl_core.iidm.io.export_providers.cgmes_exporter with {
+      description 'Exporter: one writer per profile'
+    }
+    include powsybl_core.cgmes.eq_export with {
+      description 'Own IIDM → CGMES rules for EQ'
+    }
+    include powsybl_core.cgmes.ssh_export with {
+      description 'writeGenerators: RotatingMachine.p = −targetP'
+    }
+    include powsybl_core.cgmes.tp_sv_export with {
+      description 'Own IIDM → CGMES rules for TP, SV'
+    }
+    include unified_mapping_legend.rule_stated with {
+      title 'Legend: rule stated here'
+      description 'Code stating RotatingMachine.p = −targetP'
+    }
+
+    exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.io, powsybl_core.iidm.io.exchange_formats,
+      powsybl_core.iidm.io.import_providers, powsybl_core.iidm.io.export_providers, powsybl_core.cgmes,
+      unified_mapping_legend
+    exclude powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.iidm.network
+    exclude powsybl_core.cgmes.conversion_update -> powsybl_core.iidm.network
+    exclude powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.triple_store
+    exclude powsybl_core.cgmes.eq_export -> powsybl_core.iidm.network
+    exclude powsybl_core.cgmes.tp_sv_export -> powsybl_core.iidm.network
+
+    style * {
+      color doc_unchanged
+      textSize lg
+    }
+    style powsybl_core.cgmes.element_conversions, powsybl_core.cgmes.ssh_export, unified_mapping_legend.rule_stated {
+      color doc_rule
+    }
+    autoLayout TopBottom 60 40
+  }
+
+  view families-after {
+    title 'After the rework: eight families state the mapping once'
+    description 'powsybl-core branch feat/diffstacking-unified-mapping at tag rework-end (8d6fc2e860). The import front end is unchanged. The SSH side of the mapping lives in eight family classes, one describe function per CGMES class, with plain rows and Quantity for the purely tabular values (loads, control areas). Every family writes into a CgmesPropertySink: the XML writer of the full SSH export, or the buffer of one change for the partial SSH, the difference model and the RDF database. The in-place import of a difference reads the same families: the subject index, the blocks and the capability table derived from them, and mapping.md is generated from them. Honestly: the importer still states the machine rule itself, in SynchronousMachineConversion.update (unchanged upstream code); loads, control areas and switches it reads through the rows.'
+
+    // Import front end, unchanged
+    include powsybl_core.iidm.io.exchange_formats.cgmes with {
+      title 'CGMES files'
+      description 'EQ, SSH, TP, SV instance files'
+    }
+    include powsybl_core.iidm.io.import_providers.cgmes_importer with {
+      description 'Importer: Network.read and Importer.update'
+    }
+    include powsybl_core.cgmes.triple_store with {
+      description 'Holds the instance files as RDF'
+    }
+    include powsybl_core.cgmes.query_catalog with {
+      title 'SPARQL catalogue (CIM16.sparql)'
+      description 'Named queries, unchanged'
+    }
+    include powsybl_core.cgmes.conversion with {
+      title 'Conversion'
+      description 'Full import, unchanged'
+    }
+    include powsybl_core.cgmes.conversion_update with {
+      title 'Conversion.update'
+      description 'SSH update, scoped to the touched objects'
+    }
+    include powsybl_core.cgmes.element_conversions with {
+      title 'elements/*Conversion'
+      description 'Machines: SynchronousMachineConversion.update still states targetP = −p'
+    }
+    include powsybl_core.iidm.network with {
+      title 'IIDM Network'
+      description 'Generator.targetP, generator sign convention'
+    }
+
+    // The mapping
+    include powsybl_core.cgmes.change_translator with {
+      title 'CgmesChangeTranslator'
+      description 'Dispatches a recorded change by key'
+    }
+    include proposed_unified_mapping.families with {
+      title 'Family classes'
+      description 'One describe function per CGMES class'
+    }
+    include proposed_unified_mapping.families.load_family with { description 'Loads, as plain rows' }
+    include proposed_unified_mapping.families.machine_family with { description 'describeSynchronousMachine: p = −targetP' }
+    include proposed_unified_mapping.families.tap_changer_and_shunt_family with { description 'Tap changers, shunts, SVCs' }
+    include proposed_unified_mapping.families.switch_and_terminal_family with { description 'Switch.open, Terminal.connected' }
+    include proposed_unified_mapping.families.hvdc_family with { description 'Converters: modes and targets' }
+    include proposed_unified_mapping.families.limit_family with { description 'Limits and impedances (EQ)' }
+    include proposed_unified_mapping.families.regulating_control_family with { description 'Regulating and tap changer controls' }
+    include proposed_unified_mapping.families.control_area_family with { description 'Net interchange, as plain rows' }
+    include proposed_unified_mapping.plain_rows with {
+      title 'Quantity / PlainRow / LoadRows'
+      description 'Unit, sign, spelling: once, both directions'
+    }
+    include proposed_unified_mapping.refusal with {
+      description 'Rule, remedy, scope of every refusal'
+    }
+    include proposed_unified_mapping.property_sink with {
+      description 'Xml writer or buffer of one change'
+    }
+
+    // Consumers
+    include powsybl_core.cgmes.ssh_export with {
+      title 'Full SSH export'
+      description 'SteadyStateHypothesisExport, XML writer'
+    }
+    include powsybl_core.cgmes.partial_ssh_export with {
+      title 'Partial SSH'
+      description 'PartialSshExport, from the buffer'
+    }
+    include powsybl_core.cgmes.cgmes_diff_export with {
+      title 'CGMES difference model'
+      description 'CgmesDiffExport, forward and reverse statements'
+    }
+    include powsybl_core.cgmes.rdfdb.rdf_db_difference_sink with {
+      title 'RDF database (cgmes-rdfdb)'
+      description 'RdfDbDifferenceSink: two named graphs'
+    }
+    include powsybl_core.cgmes.cgmes_diff_import with {
+      title 'In-place import'
+      description 'CgmesDiffImport fast route'
+    }
+
+    // Derived artefacts
+    include powsybl_core.cgmes.fast_route_capabilities with {
+      title 'Capability table'
+      description 'FastRouteCapabilities, derived from the blocks'
+    }
+    include proposed_unified_mapping.subject_index with {
+      title 'Subject index'
+      description 'Families.resolve: CGMES id to network object'
+    }
+    include proposed_unified_mapping.mapping_page with {
+      title 'mapping.md (generated)'
+      description 'MappingPageTest fails when stale'
+    }
+
+    include unified_mapping_legend.rule_stated with {
+      title 'Legend: rule stated here'
+      description 'Code stating RotatingMachine.p = −targetP'
+    }
+    include unified_mapping_legend.unchanged with {
+      title 'Legend: upstream code, unchanged'
+      description 'Import front end'
+    }
+    include unified_mapping_legend.reworked with {
+      title 'Legend: new or reworked'
+      description 'Mapping, consumers, derived artefacts'
+    }
+
+    exclude powsybl_core, powsybl_core.iidm, powsybl_core.iidm.io, powsybl_core.iidm.io.exchange_formats,
+      powsybl_core.iidm.io.import_providers, powsybl_core.cgmes, powsybl_core.cgmes.rdfdb,
+      proposed_unified_mapping, unified_mapping_legend
+    exclude powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.iidm.network
+    exclude powsybl_core.cgmes.conversion_update -> powsybl_core.iidm.network
+    exclude powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.triple_store
+    exclude powsybl_core.cgmes.conversion_update -> proposed_unified_mapping.plain_rows
+    exclude powsybl_core.cgmes.ssh_export -> *
+    exclude * -> powsybl_core.iidm.network
+    exclude proposed_unified_mapping.property_sink -> powsybl_core.iidm.io.exchange_formats.cgmes
+    exclude powsybl_core.cgmes.partial_ssh_export -> powsybl_core.iidm.io.exchange_formats.cgmes
+    exclude proposed_unified_mapping.mapping_page -> proposed_unified_mapping.refusal
+    exclude powsybl_core.cgmes.change_translator -> powsybl_core.cgmes.difference_model
+    exclude powsybl_core.cgmes.partial_ssh_export -> powsybl_core.cgmes.change_translator
+    exclude powsybl_core.cgmes.cgmes_diff_export -> powsybl_core.cgmes.change_translator
+    include powsybl_core.cgmes.element_conversions -> powsybl_core.iidm.network
+    include proposed_unified_mapping.property_sink -> powsybl_core.cgmes.ssh_export with { title 'full model: Xml' }
+    include proposed_unified_mapping.property_sink -> powsybl_core.cgmes.partial_ssh_export with { title 'one change: buffer' }
+    include proposed_unified_mapping.property_sink -> powsybl_core.cgmes.cgmes_diff_export with { title 'one change: buffer' }
+    include powsybl_core.cgmes.element_conversions -> proposed_unified_mapping.plain_rows with { title 'reads loads, areas, switches through' }
+    include powsybl_core.cgmes.cgmes_diff_import -> proposed_unified_mapping.subject_index with { title 'resolves subjects, completes groups with' }
+
+    style * {
+      color doc_reworked
+      textSize lg
+    }
+    style powsybl_core.iidm.io.exchange_formats.cgmes, powsybl_core.iidm.io.import_providers.cgmes_importer,
+      powsybl_core.cgmes.triple_store, powsybl_core.cgmes.query_catalog, powsybl_core.cgmes.conversion,
+      powsybl_core.cgmes.conversion_update, powsybl_core.iidm.network, unified_mapping_legend.unchanged {
+      color doc_unchanged
+    }
+    style proposed_unified_mapping.families, proposed_unified_mapping.families.*, proposed_unified_mapping.plain_rows,
+      powsybl_core.cgmes.element_conversions, unified_mapping_legend.rule_stated {
+      color doc_rule
+    }
+    autoLayout TopBottom 60 40
+  }
+
+  dynamic view machine-example {
+    title 'One change of a generator\'s active power, both directions'
+    description 'Export (steps 1-8): Generator G.setTargetP(100) is recorded; CgmesChangeTranslator dispatches it by key to MachineFamily, whose describeSynchronousMachine writes RotatingMachine.p = -100 into a CgmesPropertySink; the same function writes the full SSH. Import (steps 9-16): a difference stating RotatingMachine.p = -120 is planned by FastRoutePlan, resolved by Families.resolve, completed to the SynchronousMachine block of MachineFamily, and applied by the unchanged Conversion.update, where SynchronousMachineConversion.update states targetP = -p again.'
+    include powsybl_core.iidm.network with { title 'IIDM Network'; description 'Generator G, targetP' }
+    include powsybl_core.iidm.variants.network_event_recorder with { title 'NetworkEventRecorder'; description 'Records the change as an event' }
+    include powsybl_core.cgmes.change_translator with { title 'CgmesChangeTranslator'; description 'Dispatches a change by key' }
+    include proposed_unified_mapping.families.machine_family with { description 'States RotatingMachine.p = −targetP once' }
+    include proposed_unified_mapping.property_sink with { description 'Xml writer or buffer of one change' }
+    include powsybl_core.cgmes.ssh_export with { title 'Full SSH export'; description 'SteadyStateHypothesisExport' }
+    include powsybl_core.cgmes.partial_ssh_export with { title 'Partial SSH'; description 'PartialSshExport' }
+    include powsybl_core.cgmes.cgmes_diff_export with { title 'CGMES difference model'; description 'CgmesDiffExport' }
+    include powsybl_core.cgmes.rdfdb.rdf_db_difference_sink with { title 'RDF database'; description 'RdfDbDifferenceSink (cgmes-rdfdb)' }
+    include powsybl_core.cgmes.cgmes_diff_import with { title 'CgmesDiffImport'; description 'In-place import of a difference' }
+    include proposed_unified_mapping.fast_route_plan with { description 'Resolves, checks, completes every subject' }
+    include proposed_unified_mapping.subject_index with { title 'Families.resolve'; description 'CGMES id to network object, class' }
+    include powsybl_core.cgmes.conversion_update with { title 'Conversion.update'; description 'Upstream SSH update, unchanged' }
+    include powsybl_core.cgmes.element_conversions with { title 'SynchronousMachineConversion'; description 'update(): targetP = −p, upstream code' }
+    include unified_mapping_legend.rule_stated with { title 'Legend: rule stated here'; description 'Code stating RotatingMachine.p = −targetP' }
+
+    // Export of the change
+    powsybl_core.iidm.network -> powsybl_core.iidm.variants.network_event_recorder 'G.setTargetP(100): event targetP'
+    powsybl_core.iidm.variants.network_event_recorder -> powsybl_core.cgmes.change_translator 'change log'
+    powsybl_core.cgmes.change_translator -> proposed_unified_mapping.families.machine_family 'key targetP: generatorUpdates(G)'
+    proposed_unified_mapping.families.machine_family -> proposed_unified_mapping.property_sink 'describeSynchronousMachine: RotatingMachine.p = −100' {
+      notes 'The rule is stated here once: loadConventionP = −targetP.'
+    }
+    proposed_unified_mapping.property_sink -> powsybl_core.cgmes.partial_ssh_export 'buffer: SynchronousMachine block'
+    proposed_unified_mapping.property_sink -> powsybl_core.cgmes.cgmes_diff_export 'buffer: forward and reverse statements'
+    powsybl_core.cgmes.cgmes_diff_export -> powsybl_core.cgmes.rdfdb.rdf_db_difference_sink 'DifferenceModelSet: two named graphs'
+    proposed_unified_mapping.property_sink -> powsybl_core.cgmes.ssh_export 'full model: same describe, Xml sink'
+
+    // Import of a difference
+    powsybl_core.cgmes.rdfdb.rdf_db_difference_sink -> powsybl_core.cgmes.cgmes_diff_import 'RdfDbNetworkLoader: difference RotatingMachine.p = −120'
+    powsybl_core.cgmes.cgmes_diff_import -> proposed_unified_mapping.fast_route_plan 'FastRoutePlan.of(network, diffs)'
+    proposed_unified_mapping.fast_route_plan -> proposed_unified_mapping.subject_index 'resolve(id, SynchronousMachine)'
+    proposed_unified_mapping.fast_route_plan -> proposed_unified_mapping.families.machine_family 'block SYNCHRONOUS_MACHINE: properties, query'
+    proposed_unified_mapping.families.machine_family -> proposed_unified_mapping.fast_route_plan 'describe: completes the block'
+    powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.cgmes.conversion_update 'synthetic SSH, scoped update'
+    powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.element_conversions 'synchronousMachinesForUpdate row'
+    powsybl_core.cgmes.element_conversions -> powsybl_core.iidm.network 'update(): targetP = −p = 120' {
+      notes 'Upstream code, unchanged: the import states the rule a second time.'
+    }
+
+    style * {
+      color doc_reworked
+      textSize lg
+    }
+    autoLayout TopBottom 60 40
+    style powsybl_core.iidm.network, powsybl_core.iidm.variants.network_event_recorder, powsybl_core.cgmes.conversion_update {
+      color doc_unchanged
+    }
+    style proposed_unified_mapping.families.machine_family, powsybl_core.cgmes.element_conversions, unified_mapping_legend.rule_stated {
+      color doc_rule
+    }
+  }
+}

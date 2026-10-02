@@ -1,0 +1,40 @@
+// The CGMES conversion classes every path of the mapping goes through, as they are on upstream main
+// (powsybl-core f3d031b60f, "Bump to v7.5.0-SNAPSHOT"). They exist unchanged on the diffstacking branches, except
+// SteadyStateHypothesisExport, which the unified mapping proposal rewrites (model/proposals/unified-mapping.c4).
+model {
+  extend powsybl_core.cgmes {
+    query_catalog = component 'SPARQL query catalogue (CIM16.sparql)' 'The named queries of cgmes-model: one per CIM class and purpose, for instance synchronousMachinesForUpdate, read by the conversion through CgmesModel.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/import.html
+    }
+    conversion = component 'Conversion' 'The CGMES import: converts the equipment profile into a Network, then runs the update of the SSH and SV profiles on it (updateWithAllInputs).' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-cgmes-conversion/latest/com.powsybl.cgmes.conversion/com/powsybl/cgmes/conversion/Conversion.html
+    }
+    element_conversions = component 'elements/*Conversion + Update' 'One class per CIM class (SynchronousMachineConversion, EnergyConsumerConversion, ...): convert() builds the IIDM object from EQ, the static update() sets its state from SSH. Update dispatches to them by original class.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/import.html
+    }
+    eq_export = adapter 'EquipmentExport' 'Writes the equipment (EQ) profile of a network.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-cgmes-conversion/latest/com.powsybl.cgmes.conversion/com/powsybl/cgmes/conversion/export/EquipmentExport.html
+    }
+    ssh_export = adapter 'SteadyStateHypothesisExport' 'Writes the steady state hypothesis (SSH) profile of a network.' {
+      link https://javadoc.io/doc/com.powsybl/powsybl-cgmes-conversion/latest/com.powsybl.cgmes.conversion/com/powsybl/cgmes/conversion/export/SteadyStateHypothesisExport.html
+    }
+    tp_sv_export = adapter 'TopologyExport / StateVariablesExport' 'Write the topology (TP) and the state variables (SV) profiles of a network.' {
+      link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/export.html
+    }
+  }
+
+  powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.cgmes.conversion 'Network.read: converts with'
+  powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.cgmes.conversion_update 'Importer.update: updates with'
+  powsybl_core.cgmes.conversion -> powsybl_core.cgmes.query_catalog 'reads the model through'
+  powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.query_catalog 'reads the update queries of'
+  powsybl_core.cgmes.query_catalog -> powsybl_core.cgmes.triple_store 'is evaluated on'
+  powsybl_core.cgmes.conversion -> powsybl_core.cgmes.element_conversions 'convert() per object, then update()'
+  powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.element_conversions 'update() per object'
+  powsybl_core.cgmes.element_conversions -> powsybl_core.iidm.network 'creates and sets the state of'
+  powsybl_core.iidm.io.export_providers.cgmes_exporter -> powsybl_core.cgmes.eq_export 'writes EQ with'
+  powsybl_core.iidm.io.export_providers.cgmes_exporter -> powsybl_core.cgmes.ssh_export 'writes SSH with'
+  powsybl_core.iidm.io.export_providers.cgmes_exporter -> powsybl_core.cgmes.tp_sv_export 'writes TP and SV with'
+  powsybl_core.cgmes.eq_export -> powsybl_core.iidm.network 'reads'
+  powsybl_core.cgmes.ssh_export -> powsybl_core.iidm.network 'reads'
+  powsybl_core.cgmes.tp_sv_export -> powsybl_core.iidm.network 'reads'
+}
