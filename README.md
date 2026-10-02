@@ -8,6 +8,7 @@ This directory contains one LikeC4 project for the repositories checked out besi
 
 - `model/as-is/` and `views/as-is/` document source-confirmed behavior in the checked-out repositories. Their FQNs identify real code or documented public contracts.
 - `model/proposals/` and `views/proposals/` describe target architecture only. New target elements use `proposed_*` or a proposal-specific root such as `proposal_a_*`; they must not extend a factual FQN.
+- Each proposal has its own folder in both trees: `model/proposals/<proposal>/` (elements and a `README.md` saying what it proposes, its status, view ids and evidence) and `views/proposals/<proposal>/` (its views). [PROPOSALS.md](PROPOSALS.md) lists all proposals; exported PNGs of their views are under `exports/proposals/<proposal>/` (see [exports/README.md](exports/README.md)).
 - Proposal relationships may point to factual FQNs using intent labels such as `would consume as-is`, `would extract into`, or `would expose support for`. This shows reuse without claiming that the target capability already exists.
 - `model/00-specification.c4` is shared LikeC4 vocabulary rather than factual or target architecture. Its element
   kinds are `repository, module, api, provider, engine, adapter, model, component, binding, library, format,
