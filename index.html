@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Powsybl Architecture</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        background: #f4f7fb;
+        color: #182333;
+      }
+
+      body {
+        align-items: center;
+        background-image: linear-gradient(rgba(36, 99, 235, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(36, 99, 235, 0.08) 1px, transparent 1px);
+        background-size: 32px 32px;
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        min-height: 100vh;
+        padding: 24px;
+      }
+
+      main {
+        max-width: 560px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        letter-spacing: 0;
+        margin: 0 0 12px;
+      }
+
+      p {
+        font-size: 1.125rem;
+        line-height: 1.5;
+        margin: 0 0 28px;
+      }
+
+      nav {
+        display: grid;
+        gap: 12px;
+        width: min(100%, 400px);
+      }
+
+      h2 {
+        font-size: 1rem;
+        letter-spacing: 0;
+        margin: 20px 0 0;
+      }
+
+      h2:first-child {
+        margin-top: 0;
+      }
+
+      a {
+        background: #2563eb;
+        border-radius: 6px;
+        color: #ffffff;
+        display: block;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+        padding: 12px 16px;
+        text-decoration: none;
+      }
+
+      a:focus-visible,
+      a:hover {
+        background: #1d4ed8;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          background: #111827;
+          color: #e5edf8;
+        }
+
+        body {
+          background-image: linear-gradient(rgba(125, 211, 252, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(125, 211, 252, 0.1) 1px, transparent 1px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Powsybl Architecture</h1>
+      <p>As-is views show only what exists on the upstream main branches of powsybl-core, pypowsybl and powsybl-open-loadflow. Proposal views show a target architecture, or code that exists only on a branch and not upstream.</p>
+      <nav aria-label="Architecture diagrams">
+        <h2>As-is codebase</h2>
+        <a href="./app/#/project/powsybl-architecture/view/index/">As-is: Powsybl integration</a>
+        <a href="./app/#/project/powsybl-architecture/view/detailed_ac_dc_grid_lifecycle/">As-is: Detailed AC-DC grid lifecycle</a>
+        <a href="./app/#/project/powsybl-architecture/view/contingency_and_corrective_action_flow/">As-is: Contingency and corrective-action flow</a>
+        <a href="./app/#/project/powsybl-architecture/view/analysis_configuration_and_result_selection/">As-is: Analysis configuration and result selection</a>
+        <a href="./app/#/project/powsybl-architecture/view/core_repository_structure/">As-is: powsybl-core</a>
+        <a href="./app/#/project/powsybl-architecture/view/open_loadflow_components/">As-is: powsybl-open-loadflow</a>
+        <a href="./app/#/project/powsybl-architecture/view/fast_restart_and_network_cache/">As-is: Open Load Flow fast restart and NetworkCache (AC, main)</a>
+        <a href="./app/#/project/powsybl-architecture/view/solver_and_outer_loop_pipeline/">As-is: Open Load Flow solver and outer-loop pipeline</a>
+        <a href="./app/#/project/powsybl-architecture/view/pypowsybl_binding_layers/">As-is: pypowsybl</a>
+        <a href="./app/#/project/powsybl-architecture/view/capability_and_provider_bundle/">As-is: pypowsybl capability and provider bundle</a>
+        <h2>Proposed target architecture</h2>
+        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_a/">Proposed: State Estimation Proposal A</a>
+        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposal_b/">Proposed: State Estimation Proposal B (powsybl-open-simulator refactor)</a>
+        <a href="./app/#/project/powsybl-architecture/view/state_estimation_proposed_contracts/">Proposed: State Estimation and OpenSteadyState contracts</a>
+        <a href="./app/#/project/powsybl-architecture/view/upstream-main-today/">As-is context: powsybl-core upstream main today (CGMES mapping)</a>
+        <a href="./app/#/project/powsybl-architecture/view/families-after/">Proposed: unified mapping after the family rework</a>
+        <a href="./app/#/project/powsybl-architecture/view/machine-example/">Proposed: unified mapping, one generator change end to end</a>
+        <a href="./app/#/project/powsybl-architecture/view/unified_mapping_before/">Proposed: unified mapping, before (change exports with own rules)</a>
+        <a href="./app/#/project/powsybl-architecture/view/unified_mapping_after/">Proposed: unified mapping, after (families, sink, consumers)</a>
+        <a href="./app/#/project/powsybl-architecture/view/rdfdb-integration/">Proposed: model registry as a separate repository</a>
+        <h2>Proposed: diffstacking (local branch feat/vibestacker, not upstream)</h2>
+        <a href="./app/#/project/powsybl-architecture/view/cgmes_change_export/">Proposed: CGMES change export (partial SSH, difference models)</a>
+        <a href="./app/#/project/powsybl-architecture/view/cgmes_diff_import/">Proposed: CGMES difference model import in place</a>
+        <a href="./app/#/project/powsybl-architecture/view/cgmes_loading_split/">Proposed: CGMES loading through an RDF database</a>
+        <a href="./app/#/project/powsybl-architecture/view/pypowsybl_change_export/">Proposed: pypowsybl change recording and export</a>
+        <a href="./app/#/project/powsybl-architecture/view/pypowsybl_rdf_database/">Proposed: pypowsybl RDF database</a>
+        <a href="./app/#/project/powsybl-architecture/view/diffstacking_ipc/">Proposed: diffstacking IPC through the RDF database</a>
+        <a href="./app/#/project/powsybl-architecture/view/diffstacking_slow_route/">Proposed: diffstacking slow route</a>
+        <h2>Proposed: Open Load Flow pull-request branches (not on main)</h2>
+        <a href="./app/#/project/powsybl-architecture/view/olf_branch_network_cache/">Proposed: generic AC/DC NetworkCache (dc_lf_network_cache)</a>
+        <a href="./app/#/project/powsybl-architecture/view/olf_branch_monitored_result_filter/">Proposed: monitored-result delta filter (filter-monitored-results)</a>
+      </nav>
+    </main>
+  </body>
+</html>
