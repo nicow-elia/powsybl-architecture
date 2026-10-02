@@ -68,11 +68,15 @@ The final row is a negative finding from source and module-list searches. It doe
 | `powsybl_core.cgmes.rdfdb.variant_scope` | powsybl-core | `powsybl-core/cgmes/cgmes-rdfdb/src/main/java/com/powsybl/cgmes/rdfdb/{VariantScope,NetworkIdentity}.java` (`capture`, `install`), `powsybl-core/cgmes/cgmes-conversion/src/main/java/com/powsybl/cgmes/conversion/export/ExportVariantScope.java` | `feat/diffstacking` / `c8c7f57f0f` | 2026-09-21 |
 | `powsybl_core.cgmes.rdfdb.variant_updater` | powsybl-core | `powsybl-core/cgmes/cgmes-rdfdb/src/main/java/com/powsybl/cgmes/rdfdb/{VariantUpdater,VariantBulkLoader,VariantRequest,VariantLoadResult,RdfDbVariantLoadOptions}.java`, `RdfDbNetworkLoader.loadVariants`; tests `RdfDbVariantFlowTest`, `RdfDbVariantBulkLoadTest`, `RdfDbVariantExportTest`, `RdfDbVariantsBenchmarkTest` | `feat/diffstacking` / `c8c7f57f0f` | 2026-09-21 |
 
-## Unified mapping proposal (`model/proposals/unified-mapping.c4`)
+## Unified mapping proposal (`model/proposals/unified-mapping/`)
 
 The elements of the proposal exist on the powsybl-core branch `feat/diffstacking-unified-mapping` (worktree
 `scratchpad/worktrees/powsybl-core-unified`), not upstream. "Before" is the start of the rework, `bb9cb0eb85`; "after"
 is `p4-merged` = `20ce552c50` (identical in main code to the P5 head, which adds a test and the documentation page).
+
+Model: `model/proposals/unified-mapping/mapping.c4`; views: `views/proposals/unified-mapping/before-after.c4` and
+`document-views.c4`; exported diagrams: `exports/proposals/unified-mapping/`; overview:
+[model/proposals/unified-mapping/README.md](model/proposals/unified-mapping/README.md).
 
 | FQN | Repository | Source path(s) | Branch/commit reviewed | Last checked |
 | --- | --- | --- | --- | --- |

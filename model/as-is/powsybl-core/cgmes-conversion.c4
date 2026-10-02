@@ -1,6 +1,6 @@
 // The CGMES conversion classes every path of the mapping goes through, as they are on upstream main
 // (powsybl-core f3d031b60f, "Bump to v7.5.0-SNAPSHOT"). They exist unchanged on the diffstacking branches, except
-// SteadyStateHypothesisExport, which the unified mapping proposal rewrites (model/proposals/unified-mapping.c4).
+// SteadyStateHypothesisExport, which the unified mapping proposal rewrites (model/proposals/unified-mapping/mapping.c4).
 model {
   extend powsybl_core.cgmes {
     query_catalog = component 'SPARQL query catalogue (CIM16.sparql)' 'The named queries of cgmes-model: one per CIM class and purpose, for instance synchronousMachinesForUpdate, read by the conversion through CgmesModel.' {
