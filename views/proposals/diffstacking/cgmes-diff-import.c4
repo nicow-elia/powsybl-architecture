@@ -1,0 +1,50 @@
+views 'Diffstacking: proposal' {
+  view cgmes_diff_import {
+    title 'CGMES difference model import: the in-place fast route'
+    description 'The CGMES importer sniffs the files of a data source and hands a difference model to CgmesDiffImport. That decides, against the network and against a declarative table of what the update queries read, whether every statement can be applied in place; completes the consistency groups a minimal difference leaves out through the very mapping the change export uses; writes the result as a synthetic partial SSH document into a fresh triple store; and runs the ordinary CGMES update workflow on it. The equipment statements no update query reads - branch impedances and the limits of a voltage level without VoltageLimit objects - are applied afterwards by DirectEqApplier with plain IIDM setters. TripleStoreDiffApplier is the slow-route building block for the differences the fast route refuses.'
+
+    include powsybl_core
+    include powsybl_core.iidm
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.io
+    include powsybl_core.iidm.io.exchange_formats
+    include proposed_diffstacking.difference_model_format
+    include powsybl_core.iidm.io.import_providers
+    include powsybl_core.iidm.io.import_providers.cgmes_importer
+    include powsybl_core.cgmes
+    include proposed_diffstacking
+    include powsybl_core.cgmes.triple_store
+    include proposed_diffstacking.difference_model
+    include proposed_diffstacking.difference_model_parser
+    include proposed_diffstacking.cgmes_diff_import
+    include proposed_diffstacking.fast_route_capabilities
+    include proposed_diffstacking.cgmes_object_dump
+    include proposed_diffstacking.change_translator
+    include proposed_diffstacking.diff_update_store
+    include powsybl_core.cgmes.conversion_update
+    include proposed_diffstacking.direct_eq_applier
+    include proposed_diffstacking.triple_store_diff_applier
+  }
+
+  dynamic view cgmes_diff_import_fast_route {
+    title 'Applying a CGMES difference model in place, step by step'
+    description 'Everything is decided before the first mutation: a difference that cannot be applied leaves the network exactly as it was.'
+    variant sequence
+
+    powsybl_core.iidm.io.import_providers.cgmes_importer -> proposed_diffstacking.difference_model_parser 'reads the first elements of every file of the data source'
+    proposed_diffstacking.difference_model_parser -> proposed_diffstacking.difference_model 'parses the document into forward and reverse statements'
+    powsybl_core.iidm.io.import_providers.cgmes_importer -> proposed_diffstacking.cgmes_diff_import 'hands over the difference models and the import parameters'
+    proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.fast_route_capabilities 'asks whether every property is one an update query reads'
+    proposed_diffstacking.fast_route_capabilities -> powsybl_core.iidm.network 'resolves every subject to an object and a CIM class'
+    proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.cgmes_object_dump 'asks for the properties a touched consistency group is missing'
+    proposed_diffstacking.cgmes_object_dump -> proposed_diffstacking.change_translator 'probes the export mapping with a synthetic change'
+    proposed_diffstacking.change_translator -> powsybl_core.iidm.network 'reads the current value'
+    proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.diff_update_store 'hands over the completed, typed objects'
+    proposed_diffstacking.diff_update_store -> powsybl_core.cgmes.triple_store 'loads a synthetic partial SSH document'
+    proposed_diffstacking.cgmes_diff_import -> powsybl_core.cgmes.conversion_update 'runs the update, restricted to the equipment the difference names'
+    powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.triple_store 'runs the update queries'
+    powsybl_core.cgmes.conversion_update -> powsybl_core.iidm.network 'sets the new values and registers the difference as the model of its profile'
+    proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.direct_eq_applier 'hands over the equipment statements no update query reads'
+    proposed_diffstacking.direct_eq_applier -> powsybl_core.iidm.network 'sets the impedances and the voltage level limits, and syncs the CGMES 2.4.15 normal values'
+  }
+}

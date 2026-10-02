@@ -1,0 +1,46 @@
+// Proposal: the model registry (today the module cgmes-rdfdb of the diffstacking branch) lives in a repository of its
+// own, e.g. powsybl-cgmes-registry (reports/20-final-report.md §6, slice S11: "cgmes-rdfdb (own repository proposal,
+// 5 PRs)"). powsybl-core keeps the network, the CGMES conversion, the in-place import of a difference and the thin
+// triple store over a SPARQL endpoint (slice S10). The registry elements are those of cgmes-rdfdb in the diffstacking
+// proposal (proposed_diffstacking.cgmes_rdfdb.*, model/proposals/diffstacking/cgmes-rdfdb.c4); only their
+// repository changes. The actors and the scenario-per-authority element are new; the latter is proposed, not code.
+model {
+  rdfdb_integration_tso = component 'TSO' 'Exports a day as instance files: the base model, then 96 sets of SSH files, one per quarter hour.'
+  rdfdb_integration_study_tool = component 'Study tool' 'Asks for one moment of one day, e.g. (scenario, 08:30, version 1.1), into a network or a variant of it.'
+  rdfdb_integration_operator = component 'Operator' 'Changes a loaded network (a variant) and writes the change back as a new version.'
+
+  proposed_rdfdb_scenario_per_mas = component 'One scenario per ModelingAuthoritySet (proposed)' 'Model management per modelling authority: each TSO model is a scenario of its own, and a multi-TSO CGM is a set of such scenarios plus the boundary. Not implemented; today a scenario is one base grid model (one day).'
+
+  extend proposed_diffstacking_rdf_database {
+    store_meta_graph = model 'Metadata graph per scenario' 'http://powsybl.org/rdfdb/<scenario>/meta: the catalogue, mutable and small.'
+    store_data_graphs = model 'Immutable data graphs' '.../graph/<model id>: one graph per uploaded CGMES file, written once.'
+    store_diff_graphs = model 'Forward / reverse diff graphs' '.../graph/<model id>/forward and /reverse: what a difference sets and what it replaced.'
+    store_checkpoint_copies = model 'Checkpoint copies' '.../materialized/...: a diff chain folded once on the server, an extra full starting point.'
+  }
+
+  rdfdb_integration_tso -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'putFull, then putAsDiff per timestep'
+  rdfdb_integration_study_tool -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader 'load / update / loadVariants (scenario, timestep, version)'
+  rdfdb_integration_operator -> powsybl_core.iidm.network 'changes a variant'
+  proposed_rdfdb_scenario_per_mas -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'would address one scenario per ModelingAuthoritySet'
+
+  proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.triple_store_sparql 'guarded SPARQL UPDATE, GSP PUT of graphs'
+  proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking.triple_store_sparql 'plan query; Checkpoint COPY on the server'
+  proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_unified_mapping.families 'full route: fetched graphs through the CGMES conversion'
+  powsybl_core.iidm.variants.network_event_recorder -> proposed_unified_mapping.families 'change log, written as a difference model'
+  proposed_unified_mapping.families -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'putDiff of the DifferenceModelSet (RdfDbExport)'
+  proposed_diffstacking.cgmes_diff_import -> powsybl_core.iidm.network 'applies a difference in place, into a variant'
+
+  proposed_diffstacking_rdf_database.store_meta_graph -> proposed_diffstacking_rdf_database.store_data_graphs 'indexes'
+  proposed_diffstacking_rdf_database.store_meta_graph -> proposed_diffstacking_rdf_database.store_diff_graphs 'indexes'
+  proposed_diffstacking_rdf_database.store_checkpoint_copies -> proposed_diffstacking_rdf_database.store_diff_graphs 'folds'
+}
+
+// Legend elements of the RDF database integration view: they stand for no code.
+model {
+  rdfdb_integration_legend = module 'Legend' {
+    core = component 'powsybl-core, upstream' 'Exists on upstream main'
+    registry = component 'Proposal' 'Local branches, not upstream; the model registry as a separate repository'
+    store = component 'RDF store' 'Any SPARQL 1.1 + GSP endpoint'
+    proposed = component 'Proposed' 'Dashed: not implemented'
+  }
+}

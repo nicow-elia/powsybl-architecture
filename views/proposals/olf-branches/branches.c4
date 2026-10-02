@@ -1,0 +1,43 @@
+// Proposal views of the Open Load Flow pull-request branches (model/proposals/olf-branches/branches.c4).
+views 'Open Load Flow branches: proposal' {
+  view olf_branch_network_cache {
+    title 'Open Load Flow branch dc_lf_network_cache: generic AC/DC NetworkCache'
+    description 'Branch dc_lf_network_cache (d8110945) and refactor_network_cache of powsybl/powsybl-open-loadflow, not merged into main. NetworkCache.Entry gets a generic input (LfInput) and one value per load-flow type (AcLfValue, DcLfValue), so the DC load flow gets a fast restart (DcLoadFlowFromCache) next to the AC one that main already has.'
+
+    include powsybl_open_loadflow.network_cache.*
+    include proposed_olf_branches.cache_input
+    include proposed_olf_branches.ac_cache_value
+    include proposed_olf_branches.dc_cache_value
+    include proposed_olf_branches.dc_fast_restart
+    include powsybl_open_loadflow.state_and_result_mapping
+    autoLayout LeftRight
+
+    style powsybl_open_loadflow.network_cache.*, powsybl_open_loadflow.state_and_result_mapping {
+      color gray
+    }
+    style proposed_olf_branches.* {
+      color amber
+    }
+  }
+
+  view olf_branch_monitored_result_filter {
+    title 'Open Load Flow branch filter-monitored-results: monitored-result delta filter'
+    description 'Branch filter-monitored-results of powsybl/powsybl-open-loadflow, not merged into main. powsybl-core main already carries ModifiedMonitoredElementsParameters in SecurityAnalysisParameters; the branch adds the OLF filter that omits unchanged monitored results from the N-1 and post-action output.'
+
+    include powsybl_core.study_contracts.common_study_parameters
+    include powsybl_core.study_contracts.modified_result_parameters
+    include powsybl_open_loadflow.study_execution.pre_contingency_state
+    include powsybl_open_loadflow.study_execution.post_contingency_state
+    include powsybl_open_loadflow.study_execution.post_action_state
+    include proposed_olf_branches.monitored_result_filter
+    include powsybl_open_loadflow.state_and_result_mapping.study_result_mapping
+    autoLayout LeftRight
+
+    style * {
+      color gray
+    }
+    style proposed_olf_branches.monitored_result_filter {
+      color amber
+    }
+  }
+}

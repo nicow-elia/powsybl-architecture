@@ -4,8 +4,8 @@ model {
 
   proposed_diffstacking_opencgmes = library 'OpenCGMES (general difference model application)' 'Third party RDF tooling that turns an arbitrary difference model into a full model (CimDatasetGraph.differenceModelToFullModel, FastDeltaGraph + CimXmlWriter). The reference the difference model file structure is validated against, and where general difference application belongs.'
 
-  proposed_diffstacking_db_merge_fallback -> powsybl_core.cgmes.triple_store_diff_applier 'would reuse as-is'
+  proposed_diffstacking_db_merge_fallback -> proposed_diffstacking.triple_store_diff_applier 'would reuse as-is'
   proposed_diffstacking_db_merge_fallback -> powsybl_core.cgmes.conversion_update 'would reuse as-is'
-  proposed_diffstacking_db_merge_fallback -> powsybl_core.cgmes.cgmes_diff_import 'would be chosen by the decision function of'
-  proposed_diffstacking_opencgmes -> powsybl_core.iidm.io.exchange_formats.difference_model_format 'reads and writes the same format as'
+  proposed_diffstacking_db_merge_fallback -> proposed_diffstacking.cgmes_diff_import 'would be chosen by the decision function of'
+  proposed_diffstacking_opencgmes -> proposed_diffstacking.difference_model_format 'reads and writes the same format as'
 }

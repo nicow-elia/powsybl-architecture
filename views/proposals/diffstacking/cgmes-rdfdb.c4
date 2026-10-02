@@ -1,0 +1,199 @@
+views 'Diffstacking: proposal' {
+  view cgmes_loading_split {
+    title 'CGMES loading split in two: files to a database, database to a network'
+    description 'Two scenarios in one database, each with its own instance file graphs and its own metadata graph, and nothing that reaches from one into the other. A CGMES import used to be one indivisible step. It is now two seams: CgmesTripleStoreLoader writes instance files into any triple store - the ordinary file import runs through it, CgmesModelTripleStore.read delegates to it with parallelism 1 - and TripleStoreNetworkLoader converts any triple store holding CGMES data into an IIDM network, through the very same CgmesImport.convert a file import calls. With a SPARQL database in the middle, the expensive half - parsing the files - is paid once, and every later network build reads the graphs back out of the database. Every operation names a scenario, so one database holds many days and many base grid models side by side.'
+
+    include powsybl_core
+    include powsybl_core.iidm
+    include powsybl_core.iidm.network
+    include powsybl_core.iidm.io
+    include powsybl_core.iidm.io.import_providers
+    include powsybl_core.iidm.io.import_providers.cgmes_importer
+    include powsybl_core.cgmes
+    include proposed_diffstacking
+    include powsybl_core.cgmes.triple_store
+    include proposed_diffstacking.cgmes_triple_store_loader
+    include proposed_diffstacking.triple_store_network_loader
+    include proposed_diffstacking.cgmes_rdfdb
+    include proposed_diffstacking.cgmes_rdfdb.*
+    include proposed_diffstacking.triple_store_sparql
+    include proposed_diffstacking_rdf_database
+    include proposed_diffstacking_rdf_database.*
+
+    autoLayout LeftRight
+  }
+
+  dynamic view rdfdb_fetch_performance {
+    title 'Loading a scenario out of the database, step by step'
+    description 'Why the database path can be faster than reading the files: the transfer is bulk N-Triples instead of RDF/XML, several graphs are in flight at once, and the single writer of the local store overlaps with the network and the parsers. Everything above the store - the CGMES query catalogs and the conversion - is unchanged.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.rdf_db_connection 'asks for the graphs of the scenario'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_connection -> proposed_diffstacking_rdf_database 'lists the named graphs under the scenario prefix'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.graph_fetcher 'hands over the graph names'
+    proposed_diffstacking.cgmes_rdfdb.graph_fetcher -> proposed_diffstacking_rdf_database 'four parallel GET requests, Accept application/n-triples'
+    proposed_diffstacking.cgmes_rdfdb.graph_fetcher -> powsybl_core.cgmes.triple_store 'adds each finished graph in one transaction, single writer'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.triple_store_network_loader 'converts the filled store'
+    proposed_diffstacking.triple_store_network_loader -> powsybl_core.cgmes.triple_store 'runs the unchanged CGMES query catalogs'
+    proposed_diffstacking.triple_store_network_loader -> powsybl_core.iidm.network 'creates the network'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.rdf_db_provenance 'records database, scenario and graphs on the network'
+  }
+
+  dynamic view rdfdb_upload {
+    title 'Uploading CGMES files into a scenario'
+    description 'The instance files are parsed on the client, with the very same RDF4J parser and the very same non-fatal settings a local import uses, so the statements that reach the database are the ones a file import would have produced. Each file becomes one Graph Store Protocol PUT, which replaces the graph and makes a re-upload idempotent.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_connection -> proposed_diffstacking.cgmes_triple_store_loader 'hands over the data source and the scenario store'
+    proposed_diffstacking.cgmes_triple_store_loader -> proposed_diffstacking.triple_store_sparql 'reads each instance file into the store'
+    proposed_diffstacking.triple_store_sparql -> proposed_diffstacking_rdf_database 'PUT one graph as N-Triples, several files in parallel'
+    proposed_diffstacking.cgmes_triple_store_loader -> proposed_diffstacking.triple_store_sparql 'asks whether the model already carries a boundary'
+    proposed_diffstacking.triple_store_sparql -> proposed_diffstacking_rdf_database 'modelProfiles query, restricted to the scenario'
+    proposed_diffstacking.cgmes_triple_store_loader -> proposed_diffstacking.triple_store_sparql 'reads the boundary data source if it does not'
+  }
+
+  dynamic view rdfdb_diff_roundtrip {
+    title 'A change recorded on one network, applied to another, through the database'
+    description 'The difference model pipeline with a database as the sink and the source. The producer records a change, translates it into one difference model per profile and writes it into a scenario as two immutable graphs plus a metadata node; the consumer, which loaded the same scenario earlier, finds the differences it has not seen, fetches them in one query and applies them to its network in place. Nothing in between re-reads a file or rebuilds a network.'
+    variant sequence
+
+    powsybl_core.iidm.variants.network_event_recorder -> proposed_diffstacking.cgmes_diff_export 'hands over the recorded changes'
+    proposed_diffstacking.cgmes_diff_export -> proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink 'one difference model per profile'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink -> proposed_diffstacking.cgmes_rdfdb.model_catalog 'which model does it supersede, and is that model still free'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink -> proposed_diffstacking_rdf_database 'one guarded INSERT ... WHERE into scenario S: forward graph, reverse graph, metadata node'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink -> proposed_diffstacking.cgmes_diff_export 'the sender is now at the difference it wrote'
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.diff_update_planner 'the consumer asks how to reach the head of S'
+    proposed_diffstacking.cgmes_rdfdb.diff_update_planner -> proposed_diffstacking.cgmes_rdfdb.model_catalog 'one chain query for every profile'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.rdf_db_diff_source 'fetch the differences on the path'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_diff_source -> proposed_diffstacking_rdf_database 'one query over all forward and reverse graphs'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_diff_import 'the folded difference, applied in place'
+    proposed_diffstacking.cgmes_diff_import -> powsybl_core.iidm.network 'updates the consumer network'
+  }
+
+  dynamic view rdfdb_update_decision {
+    title 'How an update of an unversioned scenario decides: nothing, a difference, or a rebuild'
+    description 'The model-level path, which is what a scenario without snapshots uses and what a caller addressing individual stored models still gets. A versioned scenario takes rdfdb_version_navigation instead, and the pre-versioning entry points delegate to it. Every step can only answer "apply differences" or "rebuild", and every rebuild carries the reason it was chosen. The scenario is decided first and without a query: the model identifiers of another scenario mean nothing here. A rebuild answers with a new network instance, which is why the caller is told about it rather than left to notice.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.rdf_db_provenance 'is the network at the target scenario? if not, reload that scenario - no query sent'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.diff_update_planner 'which stored model is the network at, per profile'
+    proposed_diffstacking.cgmes_rdfdb.diff_update_planner -> proposed_diffstacking.cgmes_rdfdb.model_catalog 'chain of the target and of the current model, one query'
+    proposed_diffstacking.cgmes_rdfdb.diff_update_planner -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader 'NOOP, or a path forwards or backwards, or FULL with reasons'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_diff_import 'canApplyInPlace: does the importer accept the folded difference'
+    proposed_diffstacking.cgmes_diff_import -> powsybl_core.iidm.network 'DIFF_APPLIED: the network handed in is updated'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer 'FULL_RELOAD: materialise the target instead'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer -> proposed_diffstacking.cgmes_rdfdb.graph_fetcher 'base graphs of the scenario, from the cache when warm'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer -> proposed_diffstacking.cgmes_diff_import 'applyToGraph: the folded chain, on the local store'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer -> proposed_diffstacking.triple_store_network_loader 'the unchanged conversion, on data that is now the target version'
+  }
+
+  view rdfdb_versioning_schema {
+    title 'What one scenario looks like inside the database'
+    description 'Two scenarios side by side would be two copies of this picture with no edge between them. A scenario is one base grid model - in practice one day - with exactly one root snapshot, one catalogue node and one metadata graph; several days are several scenarios. A snapshot says which model of every profile belongs together, which is the one thing CGMES itself has no term for: md:Model.Supersedes already chains one profile, md:Model.DependentOn already relates two, but nothing says "these six models are version 1.1".'
+
+    include proposed_diffstacking.cgmes_rdfdb_schema
+    include proposed_diffstacking.cgmes_rdfdb_schema.*
+    include proposed_diffstacking.cgmes_rdfdb.snapshot_catalog
+    include proposed_diffstacking.cgmes_rdfdb.version_graph
+    include proposed_diffstacking.cgmes_rdfdb.checkpoint
+    include proposed_diffstacking.cgmes_rdfdb.graph_uploader
+  }
+
+  dynamic view rdfdb_version_navigation {
+    title 'Reaching a version: one query, then differences or a rebuild'
+    description 'The scenario is decided first and without a query, because a snapshot IRI carries it. Everything else is one round trip: a UNION binds the snapshot the network is at and the snapshot the caller asked for, a pdb:parent* walks both to the root, and the lowest common ancestor of the two chains is the path. Up from A the differences are undone, down to B they are applied. Whether that path may be taken at all is a property of the differences on it, not of their number.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.version_graph 'bring this network to (scenario, timestep, version)'
+    proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking.cgmes_rdfdb.rdf_db_provenance 'which snapshot is the network at, and of which scenario'
+    proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking_rdf_database 'the plan query: both chains in one request'
+    proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader 'NOOP, DIFF with the path, or FULL with the reasons'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.rdf_db_diff_source 'DIFF: every difference of the path, in one request'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_diff_import 'one composed difference per profile, applied or reverted in place'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer 'FULL: build the snapshot instead'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer -> proposed_diffstacking.cgmes_rdfdb.graph_fetcher 'the nearest full graph of each profile, cached'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer -> proposed_diffstacking.triple_store_network_loader 'the unchanged conversion, on data that is now that version'
+  }
+
+  dynamic view rdfdb_checkpoint {
+    title 'Folding a chain into full graphs, on the database'
+    description 'A checkpoint pays once, on the server, what every client would otherwise pay on every load. It adds full graphs to the snapshot that already exists rather than creating a new root, so the chain stays connected and every earlier version stays reachable; what changes is only where a materialisation starts. The data operations go first: a graph no snapshot refers to is invisible, so a failure half way leaves the snapshot exactly as it was.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.checkpoint -> proposed_diffstacking.cgmes_rdfdb.version_graph 'which profiles does this snapshot reach by differences, and from where'
+    proposed_diffstacking.cgmes_rdfdb.checkpoint -> proposed_diffstacking_rdf_database 'COPY the full graph of each touched profile'
+    proposed_diffstacking.cgmes_rdfdb.checkpoint -> proposed_diffstacking_rdf_database 'per difference: set the forward keys, drop the reverse-only keys, drop the reverse-only objects'
+    proposed_diffstacking.cgmes_rdfdb.checkpoint -> proposed_diffstacking_rdf_database 'rewrite the md:FullModel header of the copy to the state model'
+    proposed_diffstacking.cgmes_rdfdb.checkpoint -> proposed_diffstacking.cgmes_rdfdb_schema.pdb_snapshot 'pdb:full and hasFull true on the existing snapshot'
+  }
+
+  dynamic view rdfdb_timesteps {
+    title 'A day: the base chain, its timesteps and the versions inside them'
+    description 'Two dimensions inside one scenario, and they are not the same kind of key. Versions change often - every study run adds one - and chain inside a timestep. Timesteps are fixed by the schedule of the day and hang off the base chain, each pinned to the base version it was made against. A walk from one timestep to another is therefore the ordinary lowest-common-ancestor plan: up to the pin, then down. The next day is a new scenario with no edge to this one, which is what keeps every chain bounded.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'a recorder at the base head writes (scenario, 08:30, 1.0)'
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.cgmes_rdfdb.timesteps 'resolve "8:30" against the base day and offset of this scenario'
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking_rdf_database 'which base version do these differences supersede (the pin)'
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.cgmes_rdfdb_schema.pdb_timestep_root 'one guarded request: the root, its members, a TimestepEdge to the pin'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.version_graph 'a client at 08:30 asks for 08:45'
+    proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader 'undo the 08:30 differences, apply the 08:45 ones: one composed update'
+  }
+
+  dynamic view rdfdb_timestep_ingestion {
+    title 'Ingesting a day from its files'
+    description 'The half of the timestep dimension a TSO actually uses: ninety-six sets of instance files, not ninety-six recorders. The parent state has to exist as triples before anything can be compared with it, which is the first half of a materialisation; what comes out of the comparison is an ordinary difference model, so every guard and message of a recorded one applies to it.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.cgmes_triple_store_loader 'parse the files of this timestep into a scratch store'
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking_rdf_database 'is the boundary still the scenario\'s own?'
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer 'the parent state as triples, on a local store'
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer -> proposed_diffstacking.cgmes_rdfdb.graph_fetcher 'its full graphs, from the cache after the first timestep of the day'
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.cgmes_rdfdb.triple_diff_calculator 'compare EQ and SSH, graph against graph'
+    proposed_diffstacking.cgmes_rdfdb.triple_diff_calculator -> proposed_diffstacking.cgmes_rdfdb.snapshot_catalog 'one difference model per profile that moved'
+    proposed_diffstacking.cgmes_rdfdb.snapshot_catalog -> proposed_diffstacking.cgmes_rdfdb.rdf_db_difference_sink 'the ordinary guarded write, as a timestep root or a version'
+  }
+  dynamic view rdfdb_variant_binding {
+    title 'A variant of a network standing for a snapshot'
+    description 'The network-level identity always describes the primary variant, and a bound variant borrows it for the length of one operation. That single decision is what keeps the feature small: the update planner, the difference exporter and the Supersedes of a written difference read the same network-level state they always read, and none of them was changed. The scope is a try-with-resources and nothing else, so an operation that throws still leaves the network saying what it really is.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.variant_updater 'bring variant "08:30" to (scenario, 08:30, 1.1)'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.variant_scope 'enter: lock the provenance, park the primary identity'
+    proposed_diffstacking.cgmes_rdfdb.variant_scope -> proposed_diffstacking.cgmes_rdfdb.variant_binding 'install this variant\'s models, case date and snapshot'
+    proposed_diffstacking.cgmes_rdfdb.variant_scope -> powsybl_core.iidm.network 'select the variant as the working one'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_diff_import 'apply the composed difference, variantSafeOnly'
+    proposed_diffstacking.cgmes_rdfdb.variant_scope -> proposed_diffstacking.cgmes_rdfdb.variant_binding 'close: capture what the operation made the network say'
+    proposed_diffstacking.cgmes_rdfdb.variant_scope -> powsybl_core.iidm.network 'reinstall the primary identity, restore the working variant'
+  }
+
+  dynamic view rdfdb_variants_bulk_load {
+    title 'A whole day as the variants of one network'
+    description 'Ninety-six timesteps would be ninety-six plan queries and ninety-six fetches over chains that mostly share their ancestors. One request instead: a UNION binds every requested address, a pdb:parent* walks all of them, and a sub-select returns the detail rows of each reached snapshot exactly once. The conversion runs once, for the first snapshot; every other variant is a clone plus one difference. Measured: two timesteps and eight cost the same number of requests.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader -> proposed_diffstacking.cgmes_rdfdb.variant_updater 'loadVariants(scenario, version, 96 timesteps)'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.version_graph 'one chains query: 96 sides in one request'
+    proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking_rdf_database 'UNION of the starts, pdb:parent* per side, details once per snapshot'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.rdf_db_materializer 'the first snapshot becomes the network (no second plan query)'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.rdf_db_diff_source 'every difference of every accepted path, in one request'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> powsybl_core.iidm.network 'one cloneVariant for every target sourced from the primary'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.variant_scope 'per target: apply its path inside its own scope'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.rdf_db_provenance 'one outcome per request: bound, or refused with reasons'
+  }
+
+  dynamic view rdfdb_variant_refusal_decision {
+    title 'Why a variant update refuses instead of reloading'
+    description 'IIDM stores the operating values per variant and the equipment description once per network, so a difference that moves an impedance, an operational limit or the rating of an HVDC line in the simplified model would reach every variant at once. An ordinary update would fall back to rebuilding the network; a variant update may not, because the other variants are states the caller is holding on to. Three gates, cheapest first: the scenario without a query, the stored flag without a fetch, and the network-aware check on the statements themselves.'
+    variant sequence
+
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.rdf_db_provenance 'another scenario? refuse without a query'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.version_graph 'the path, with pdb:variantSafe on every step'
+    proposed_diffstacking.cgmes_rdfdb.version_graph -> proposed_diffstacking.cgmes_rdfdb.variant_updater 'a step the store says is unsafe: refuse before cloning or fetching'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_diff_import 'otherwise: plan the composed difference with variantSafeOnly'
+    proposed_diffstacking.cgmes_diff_import -> proposed_diffstacking.cgmes_rdfdb.variant_updater 'a statement whose IIDM target is shared: SLOW_REQUIRED with the reason'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> powsybl_core.iidm.network 'remove the variant this call created; every variant is as it was'
+    proposed_diffstacking.cgmes_rdfdb.variant_updater -> proposed_diffstacking.cgmes_rdfdb.rdf_db_network_loader 'VARIANT_REFUSED with the reasons (or a separate network, if asked)'
+  }
+}

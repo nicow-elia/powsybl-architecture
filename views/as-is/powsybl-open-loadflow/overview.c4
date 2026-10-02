@@ -7,5 +7,24 @@ views 'powsybl-open-loadflow' {
     exclude pypowsybl_capability_bundle
     exclude pypowsybl_bundled_services
     exclude study_configuration_sources
+    // No proposal element appears in an as-is view (README.md, "Factual and Proposed Architecture").
+    exclude proposal_a_open_loadflow, proposal_a_open_loadflow.**, proposal_a_open_steady_state,
+      proposal_a_open_steady_state.**, proposal_a_state_estimation, proposal_a_state_estimation.**,
+      proposal_b_open_simulator, proposal_b_open_simulator.**, proposed_bus_branch_measurement_projection,
+      proposed_bus_branch_measurement_projection.**, proposed_diffstacking, proposed_diffstacking.**,
+      proposed_diffstacking_db_merge_fallback, proposed_diffstacking_db_merge_fallback.**,
+      proposed_diffstacking_opencgmes, proposed_diffstacking_opencgmes.**, proposed_diffstacking_pypowsybl,
+      proposed_diffstacking_pypowsybl.**, proposed_diffstacking_rdf_database, proposed_diffstacking_rdf_database.**,
+      proposed_olf_branches, proposed_olf_branches.**, proposed_rdfdb_scenario_per_mas,
+      proposed_rdfdb_scenario_per_mas.**, proposed_rectangular_measurement_jacobian,
+      proposed_rectangular_measurement_jacobian.**, proposed_retained_factorization,
+      proposed_retained_factorization.**, proposed_reusable_ac_measurement_terms,
+      proposed_reusable_ac_measurement_terms.**, proposed_state_estimation_client,
+      proposed_state_estimation_client.**, proposed_state_estimation_core_api, proposed_state_estimation_core_api.**,
+      proposed_state_estimation_input_contract, proposed_state_estimation_input_contract.**,
+      proposed_unified_mapping, proposed_unified_mapping.**, rdfdb_integration_legend, rdfdb_integration_legend.**,
+      rdfdb_integration_operator, rdfdb_integration_operator.**, rdfdb_integration_study_tool,
+      rdfdb_integration_study_tool.**, rdfdb_integration_tso, rdfdb_integration_tso.**, unified_mapping_legend,
+      unified_mapping_legend.**
   }
 }

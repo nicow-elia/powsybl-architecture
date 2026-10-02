@@ -1,6 +1,6 @@
 model {
   extend powsybl_core {
-    cgmes = module 'CGMES conversion' 'Import and export of CGMES grid models, including the two exports that write recorded network changes instead of a whole model.' {
+    cgmes = module 'CGMES conversion' 'Import and export of CGMES grid models.' {
       link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/index.html
 
       triple_store = library 'Triple store (rdf4j)' 'RDF store the CGMES import loads instance files into and queries through SPARQL.' {
@@ -9,61 +9,13 @@ model {
       cgmes_model = component 'cgmes-model' 'CGMES vocabulary, profiles and metadata models, with no dependency on IIDM.' {
         link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/index.html
       }
-      difference_model = model 'DifferenceModelSet / CgmesStatement' 'Forward and reverse RDF statements per profile'
-      partial_ssh_export = adapter 'PartialSshExport' 'Writes the objects affected by recorded changes as a partial SSH instance file.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/export.html
+      conversion_update = component 'Conversion.update (SSH update workflow)' 'The ordinary CGMES update: SPARQL queries over the loaded instance files, then XxxConversion.update per equipment.' {
+        link https://javadoc.io/doc/com.powsybl/powsybl-cgmes-conversion/latest/com.powsybl.cgmes.conversion/com/powsybl/cgmes/conversion/Conversion.html
       }
-      cgmes_diff_export = adapter 'CgmesDiffExport' 'Writes the same recorded changes as IEC 61970-552 difference models, one per profile.' {
-        link https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_exchange_formats/cgmes/export.html
-      }
-      change_translator = component 'CgmesChangeTranslator + IidmStateView' 'Maps one recorded change to CGMES properties of the steady state hypothesis and of the equipment profile (operational limits, voltage level limits, branch impedances), against the current state or against the state the change log says preceded it.'
-      difference_sink = api 'DifferenceSink / DifferenceModelWriter' 'Where the difference models of one change set are handed over to: a document per profile, or a triple store.'
-
-      difference_model_parser = component 'DifferenceModelParser' 'Streaming reader of dm:DifferenceModel documents into statements, tolerant about every shape IEC 61970-552 leaves free.'
-      cgmes_diff_import = adapter 'CgmesDiffImport' 'Applies a difference model to a loaded network in place, decides beforehand whether that is possible, and undoes it again.' {
-        link ../powsybl-core/docs/grid_exchange_formats/cgmes/import.md
-      }
-      fast_route_capabilities = component 'FastRouteCapabilities + DiffSubjectResolver' 'The declarative table of what the update workflow can read, and the resolution of difference model subjects to network objects and CIM classes.'
-      cgmes_object_dump = component 'CgmesObjectDump' 'What the change export would write about an object right now, used to complete consistency groups a minimal difference leaves out.'
-      diff_update_store = component 'DiffUpdateStoreBuilder' 'Writes the planned change as a synthetic partial SSH document into a fresh in-memory triple store.'
-      conversion_update = component 'Conversion.update (SSH update workflow)' 'The ordinary CGMES update: SPARQL queries over the loaded instance files, then XxxConversion.update per equipment.'
-      direct_eq_applier = component 'DirectEqApplier + CgmesLimitIndex' 'Applies EQ statements (impedances, voltage level limits) with IIDM setters; syncs CIM16 normal values'
-      triple_store_diff_applier = component 'TripleStoreDiffApplier' 'Replaces the property values a difference states inside one named graph, through SPARQL UPDATE only.'
     }
   }
 
-  powsybl_core.cgmes.cgmes_model -> powsybl_core.cgmes.difference_model 'defines the profiles and metadata of'
-
-  powsybl_core.iidm.variants.network_event_recorder -> powsybl_core.iidm.network 'records changes of'
-  powsybl_core.iidm.variants.network_event_recorder -> powsybl_core.cgmes.partial_ssh_export 'provides change log to'
-  powsybl_core.iidm.variants.network_event_recorder -> powsybl_core.cgmes.cgmes_diff_export 'provides change log to'
-
-  powsybl_core.cgmes.partial_ssh_export -> powsybl_core.cgmes.change_translator 'map changes with'
-  powsybl_core.cgmes.cgmes_diff_export -> powsybl_core.cgmes.change_translator 'map changes with'
-  powsybl_core.cgmes.change_translator -> powsybl_core.iidm.network 'reads current (and overlaid previous) state of'
-
-  powsybl_core.cgmes.cgmes_diff_export -> powsybl_core.cgmes.difference_model 'generates'
-  powsybl_core.cgmes.change_translator -> powsybl_core.cgmes.difference_model 'emits EQ statements for limits and impedances into'
-  powsybl_core.cgmes.difference_model -> powsybl_core.cgmes.difference_sink 'is pushed to'
-  powsybl_core.cgmes.difference_sink -> powsybl_core.iidm.io.exchange_formats.difference_model_format 'writes one file per profile'
-  powsybl_core.cgmes.partial_ssh_export -> powsybl_core.iidm.io.exchange_formats.cgmes 'writes partial SSH'
-
   powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.cgmes.triple_store 'loads files into'
-
-  powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.cgmes.difference_model_parser 'detects difference model files with'
-  powsybl_core.iidm.io.import_providers.cgmes_importer -> powsybl_core.cgmes.cgmes_diff_import 'delegates difference models to'
-  powsybl_core.iidm.io.exchange_formats.difference_model_format -> powsybl_core.cgmes.difference_model_parser 'is read by'
-  powsybl_core.cgmes.difference_model_parser -> powsybl_core.cgmes.difference_model 'produces'
-  powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.cgmes.fast_route_capabilities 'decides route with'
-  powsybl_core.cgmes.fast_route_capabilities -> powsybl_core.iidm.network 'resolves subjects and types in'
-  powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.cgmes.cgmes_object_dump 'completes groups / checks reverse values with'
-  powsybl_core.cgmes.cgmes_object_dump -> powsybl_core.cgmes.change_translator 'reuses export mapping of'
-  powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.cgmes.diff_update_store 'builds synthetic SSH update store'
-  powsybl_core.cgmes.diff_update_store -> powsybl_core.cgmes.triple_store 'writes into'
-  powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.cgmes.conversion_update 'runs'
   powsybl_core.cgmes.conversion_update -> powsybl_core.cgmes.triple_store 'queries'
   powsybl_core.cgmes.conversion_update -> powsybl_core.iidm.network 'updates in place'
-  powsybl_core.cgmes.cgmes_diff_import -> powsybl_core.cgmes.direct_eq_applier 'applies EQ statements with'
-  powsybl_core.cgmes.direct_eq_applier -> powsybl_core.iidm.network 'sets impedances and limits on'
-  powsybl_core.cgmes.triple_store_diff_applier -> powsybl_core.cgmes.triple_store 'replaces property values in'
 }

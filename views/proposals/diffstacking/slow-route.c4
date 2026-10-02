@@ -1,18 +1,19 @@
-views 'Diffstacking: proposals' {
+views 'Diffstacking: proposal' {
   view diffstacking_slow_route {
     title 'Diffstacking: what happens to a difference the fast route refuses'
     description 'CgmesDiffImport.canApplyInPlace routes a difference before anything is tried. The differences it refuses are not applied to a live network at all: with the RDF database integration they are merged into the base graphs that are already in the store and the conversion is run again, and outside PowSyBl they are the domain of general RDF tooling such as OpenCGMES. PowSyBl keeps no original files and grows no second RDF engine.'
 
     include powsybl_core
     include powsybl_core.cgmes
-    include powsybl_core.cgmes.cgmes_diff_import
-    include powsybl_core.cgmes.triple_store_diff_applier
+    include proposed_diffstacking
+    include proposed_diffstacking.cgmes_diff_import
+    include proposed_diffstacking.triple_store_diff_applier
     include powsybl_core.cgmes.conversion_update
     include powsybl_core.cgmes.triple_store
     include powsybl_core.iidm
     include powsybl_core.iidm.io
     include powsybl_core.iidm.io.exchange_formats
-    include powsybl_core.iidm.io.exchange_formats.difference_model_format
+    include proposed_diffstacking.difference_model_format
     include proposed_diffstacking_db_merge_fallback
     include proposed_diffstacking_opencgmes
   }

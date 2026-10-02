@@ -1,26 +1,26 @@
-views 'pypowsybl' {
+views 'Diffstacking: proposal' {
   view pypowsybl_change_export {
     title 'pypowsybl: recording and exporting network changes'
     description 'How a Python caller records the changes it makes to a Network and hands them over as a partial SSH file or as CGMES difference models: the Python recorder holds a handle of a Java NetworkEventRecording, which owns the core NetworkEventRecorder and calls the two core exports. The receiving side needs no new binding: update_from_file / update_from_binary_buffer reach the difference model importer through the ordinary CGMES update.'
 
     include pypowsybl.python_network
-    include pypowsybl.python_event_recorder
+    include proposed_diffstacking_pypowsybl.python_event_recorder
     include pypowsybl.pybind_extension
     include pypowsybl.native_image_bridge
     include pypowsybl.java_bindings.network_c_functions
-    include pypowsybl.java_bindings.network_event_recorder_c_functions
-    include pypowsybl.java_bindings.network_event_recording
+    include proposed_diffstacking_pypowsybl.network_event_recorder_c_functions
+    include proposed_diffstacking_pypowsybl.network_event_recording
     include powsybl_core.iidm.variants.network_event_recorder
-    include powsybl_core.cgmes.partial_ssh_export
-    include powsybl_core.cgmes.cgmes_diff_export
-    include powsybl_core.cgmes.cgmes_diff_import
+    include proposed_diffstacking.partial_ssh_export
+    include proposed_diffstacking.cgmes_diff_export
+    include proposed_diffstacking.cgmes_diff_import
 
     autoLayout LeftRight
 
-    style pypowsybl.python_network, pypowsybl.python_event_recorder {
+    style pypowsybl.python_network, proposed_diffstacking_pypowsybl.python_event_recorder {
       color sky
     }
-    style powsybl_core.iidm.variants.network_event_recorder, powsybl_core.cgmes.partial_ssh_export, powsybl_core.cgmes.cgmes_diff_export, powsybl_core.cgmes.cgmes_diff_import {
+    style powsybl_core.iidm.variants.network_event_recorder, proposed_diffstacking.partial_ssh_export, proposed_diffstacking.cgmes_diff_export, proposed_diffstacking.cgmes_diff_import {
       color green
     }
   }

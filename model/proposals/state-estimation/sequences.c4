@@ -1,5 +1,5 @@
 // Proposed elements used by the State Estimation runtime sequences in
-// views/proposals/state-estimation-sequences.c4. The client is a neutral
+// views/proposals/state-estimation/sequences.c4. The client is a neutral
 // caller. The Proposal B extension adds the topology-error and
 // network-parameter work packages of se_plan_followup.md (WP4, WP5); bad-data
 // detection and identification (WP3) are covered by

@@ -31,7 +31,7 @@ views 'Integration' {
 
   view analysis_configuration_and_result_selection {
     title 'Analysis Configuration and Result Selection'
-    description 'Configuration originates in application code, JSON, and PlatformConfig; pypowsybl marshals Python parameters through its native bridge. Core combines common parameters, selected loading limits, and state-monitor filters with OLF provider extensions. OLF maps only relevant monitored N-1 deltas and violations back into Core and pandas results.'
+    description 'Configuration originates in application code, JSON, and PlatformConfig; pypowsybl marshals Python parameters through its native bridge. Core combines common parameters, selected loading limits, and state-monitor filters with OLF provider extensions. OLF maps violations and the selected monitored results back into Core and pandas results. Core carries ModifiedMonitoredElementsParameters; the OLF filter that applies them exists only on a pull-request branch (proposal view olf_branch_monitored_result_filter).'
 
     include study_configuration_sources
     include pypowsybl.python_study_parameters
@@ -47,7 +47,6 @@ views 'Integration' {
     include powsybl_open_loadflow.study_execution.pre_contingency_state
     include powsybl_open_loadflow.study_execution.post_contingency_state
     include powsybl_open_loadflow.study_execution.limit_violation_evaluator
-    include powsybl_open_loadflow.study_execution.monitored_result_filter
     include powsybl_open_loadflow.state_and_result_mapping.study_result_mapping
     autoLayout LeftRight
 
